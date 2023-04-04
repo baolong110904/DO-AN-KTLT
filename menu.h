@@ -1,3 +1,6 @@
+#ifndef MENU_H
+#define MENU_H
+
 #include <windows.h>
 #include <iostream>
 #include <string>
@@ -19,6 +22,7 @@
 #define _MEDIUM 6
 #define _HARD 8
 
+#endif
 using namespace std;
 
 struct Player{
@@ -417,7 +421,7 @@ void playEasy(){
 
 void playMedium(){
 	Game game(_MEDIUM);
-    game.setupGame();
+  	game.setupGame();
 //    createBackground("images\\medium.txt"); // Set the background for medium mode
 	PlaySound(NULL, NULL, SND_PURGE);
     game.startGame();
@@ -738,9 +742,9 @@ void instructionScreen(){
         if (c == 'B' || c == 'b' || c == '\r') {  // check if the user pressed "B" or "b"
             displayMenu(2);  // call the main menu function
             break;
-        }
-    }
-}
+        	}
+    	}
+	}
 //	while (getConsoleInput() != 6)
 //	{
 //		Controller::playSound(ERROR_SOUND);
@@ -1078,6 +1082,7 @@ void drawLeaderBoard() {
 	    fs.read((char*)&playerClass, sizeof(playerClass));
 	       
 	    Player p = {playerName, playerID, playerClass};
+	    
 	    players.push_back(p);
 	}
 	fs.close();
