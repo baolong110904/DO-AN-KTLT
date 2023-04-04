@@ -264,7 +264,7 @@ void Game::setupGame() {
 	N("N.txt", 83, 1);
 	
 	ShowCursor(true);
-// code for the "Back" button
+	// code for the "Back" button
 	printrectangle(50, 27, 8, 2);
 	gotoxy(47, 28);
 	putchar(175);
@@ -274,83 +274,93 @@ void Game::setupGame() {
 	gotoxy(60, 28);
 	putchar(174);
 	
-	// wait for user input
-    while (true) {
-        char c = getch();
-        if (c == 13) { // user pressed Enter key
-            break;
-        }
-        else if (c == 'b' || c == 'B') { // user pressed "B" key
-//            displayStartMenu(); // call the function from menu.h
-            return; // exit current function
-        }
-    }
+	
 	// Print input fields and get player information
-
 	setcolor(Orange);
 	printrectangle(15, 13, 80, 12);
 	gotoxy(30, 15);
 	cout << "Please enter your name, ID, class shortly!";
-		gotoxy(35, 18);
-		cout << "Enter your Name:  ";
-		getline(cin, playerName);
+	gotoxy(35, 18);
+	cout << "Enter your Name:  ";
+	getline(cin, playerName);
+	
+	
+    
 		while (playerName.empty()) {
 			gotoxy(0, 27);
 			cout << "Please enter a valid name! ";
 			gotoxy(53, 18);
 			getline(cin, playerName);
 		}
+	
 		
 		gotoxy(35, 20);
 		cout << "Enter your ID:  ";
 		
-		// Restrict user to input data only within the specified coordinates
+		
 		int x = 51, y = 20;
-		while (true) {
-			char c = getch();
-			if (c == 13) break; // exit loop when user presses Enter key
-			else if (c == 8 && x > 51) { // handle backspace key
-				gotoxy(--x, y);
-				putchar(' ');
-				gotoxy(x, y);
-			}
-			else if (isdigit(c) && x < 57) { // handle numeric input
-				putchar(c);
-				playerID = playerID * 10 + (c - '0');
-				gotoxy(++x, y);
-			}
+		int playerID = 0;
+		bool validID = false;
+		while (!validID) {
+		    int key = getch();
+		
+		    if (key == 13 || key == 0) { // handle Enter key or null character
+		        if (playerID == 0) { // no valid input entered
+		            gotoxy(0, 27);
+		            cout << "Please enter a valid integer for your ID! ";
+		            gotoxy(51, 20);
+		        }
+		        else {
+		            validID = true;
+		            break;
+		        }
+		    }
+		    else if (key == 8 && x > 51) { // handle backspace key
+		        gotoxy(--x, y);
+		        putchar(' ');
+		        gotoxy(x, y);
+		        if (playerID > 0) {
+		            playerID /= 10;
+		        }
+		    }
+		    else if (isdigit(key) && x < 57) { // handle numeric input
+		        putchar(key);
+		        playerID = playerID * 10 + (key - '0');
+		        gotoxy(++x, y);
+		    }
 		}
 		
-		// Check if user entered any input for player ID
-		if (playerID == 0) {
-			gotoxy(0, 27);
-			cout << "Please enter a valid integer for your ID! ";
-			gotoxy(51, 20);
-		}
+	
+		
+		
 		
 		gotoxy(35, 22);
 		cout << "Enter your class's name:  ";
 		getline(cin, playerClass);
-	
+		
 		// Check for empty input
 		while (playerClass.empty()) {
 			gotoxy(0, 27);
 			cout << "Please enter a valid class name! ";
 			gotoxy(61, 22);
 			getline(cin, playerClass);
+		
 		}
-	
-	
-	system("cls");
 	saveData();
+	system("cls");
+		
+}
+
+	
 //// Set mode based on difficulty level
 //	if (_mode == 4)
 //		strcpy_s(mode, "EASY");
 //	else 
 //		strcpy_s(mode, "MEDIUM");
-}
+
 
 void Game::saveData() {
+
     std::ofstream outfile("player_info.dat", std::ios::binary|ios::out|ios::app);
     if (!outfile) {
         std::cerr << "Failed to open file for writing.\n";
