@@ -17,6 +17,8 @@
 #include <vector>
 #include <algorithm>
 #include <iomanip>
+#include <chrono> // for std::chrono functions
+#include <thread> // for std::this_thread::sleep_for
 
 #define _EASY 4
 #define _MEDIUM 6
@@ -41,7 +43,7 @@ void displayMenu(int option);
 void displayStartMenu();
 void exitScreen();
 int selectedSong = 0;
-
+bool animationDisplayed = false;
 
 
 void centerConsole() {
@@ -239,14 +241,21 @@ void printAnimation()
 	int color[] = { LIGHT_AQUA, AQUA, LIGHT_BLUE, BLUE, LIGHT_PURPLE, PURPLE };
 	int colorcount = 0;
 	int loop = 10;
-	bool stopped = false; // flag to indicate whether the animation is stopped or nots
-	while (loop--)
+	int duration_sec = 5; // duration to run the animation in seconds
+	// get current time as start time
+    auto start_time = std::chrono::steady_clock::now();
+	while (true)
 	{	
-		if (GetAsyncKeyState('S') & 0x8000) // check if the 'S' key is pressed
-	        {
-	            stopped = true;
-	            break;
-	        }
+		// calculate elapsed time
+        auto now = std::chrono::steady_clock::now();
+        auto elapsed_time = std::chrono::duration_cast<std::chrono::seconds>(now - start_time).count();
+		
+		 // exit the loop if the duration has elapsed
+        if (elapsed_time >= duration_sec)
+        {
+            break;
+        }
+        
 		for (int i = 0; i < n; i += 2)
 		{
 			setConsoleColor(BRIGHT_WHITE, getRandomInt(0, 15));
@@ -264,21 +273,21 @@ void printAnimation()
 		colorcount++;
 		turn = !turn;
 		// Flash the color for 5 seconds
-    	 if (colorcount == 20) // flash the color every 20 iterations (approx. 5 seconds)
-        {
-            setConsoleColor(BRIGHT_WHITE, color[colorcount % 6]);
-            system("cls");
-            colorcount = 0;
-        }
+//    	 if (colorcount == 20) // flash the color every 20 iterations (approx. 5 seconds)
+//        {
+//            setConsoleColor(BRIGHT_WHITE, color[colorcount % 6]);
+//            system("cls");
+//            colorcount = 0;
+//        }
         Sleep(250);
 
     }
 		  // Reset the color back to default
-    SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 7);
-    if (stopped) // clear the console if the animation is stopped
-    {
-        system("cls");
-    }
+//    SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 7);
+//    if (stopped) // clear the console if the animation is stopped
+//    {
+//        system("cls");
+//    }
 }
 
 void drawMenu(){
@@ -409,6 +418,141 @@ void drawStartMenu() {
     setColor(7);
     
 }
+void printRectangle(int left, int top, int width, int height){
+	gotoXY(left, top);
+	putchar(218);
+	for (int i = 0; i < width; i++)
+		putchar(196);
+	putchar(191);
+
+	int i = 0;
+	for (; i < height; i++)
+	{
+		gotoXY(left, top + i + 1);
+		putchar(179);
+		gotoXY(left + width + 1, top + i + 1);
+		putchar(179);
+	}
+
+	gotoXY(left, top + i);
+	putchar(192);
+	for (i = 0; i < width; i++)
+		putchar(196);
+	putchar(217);
+}
+int getConsoleInput(){
+	int c = _getch();
+	// Arrow key
+	if (c == 0 || c == 224)
+	{
+		switch (_getch())
+		{
+		case KEY_UP:				//lên
+			return 2;
+		case KEY_LEFT:				//trái
+			return 3;
+		case KEY_RIGHT:				//phải
+			return 4;
+		case KEY_DOWN:				//xuống
+			return 5;
+		default:				//nút khác
+			return 0;
+		}
+	}
+	else
+	{
+		if (c == KEY_ESC)                  //esc
+			return 1;
+		else if (c == 87 || c == 119) //W, w
+			return 2;
+		else if (c == 65 || c == 97)  //A, a
+			return 3;
+		else if (c == 68 || c == 100) //D, d
+			return 4;
+		else if (c == 83 || c == 115) //S, s
+			return 5;
+		else if (c == 13)             //Enter
+			return 6;
+		else if (c == 72 || c == 104) //H, h
+			return 7;
+		else if (c == 77 || c == 109) // M, m
+			return 8;
+		else
+			return 0;                 //nút khác
+	}
+}
+void exitScreen(){
+	system("cls");
+	ShowCursor(false);
+	setConsoleColor(BRIGHT_WHITE, BLACK);
+	
+	setConsoleColor(BRIGHT_WHITE, BLACK);
+	printRectangle(34, 13, 35, 8);
+	printRectangle(37, 18, 7, 2);
+	printRectangle(60, 18, 6, 2);
+	setConsoleColor(BRIGHT_WHITE, RED);
+	gotoXY(0, 0);
+	drawLogo();
+	gotoXY(42, 16);
+	cout << "Do you want to exit?";
+	string str[2] = { "Yes", "No" };
+	int left[] = { 35,40,47,58,63,69 }, word[] = { 32,32,175,174 }, color[] = { BLACK, RED }, top = 19;
+	bool choice = 0;
+	bool loop = 1;
+	bool exitProgram = false; // new variable
+	auto print1 = [&]()
+	{
+		int i = 0;
+		while (i < 2)
+		{
+			PlaySound("click.wav", NULL, SND_ASYNC | SND_NOSTOP);
+		
+			gotoXY(left[choice * 3], top);        putchar(word[i * 2]);
+			gotoXY(left[choice * 3 + 1], top);    cout << str[choice];
+			gotoXY(left[choice * 3 + 2], top);    putchar(word[i * 2 + 1]);
+			if (!i++)
+				choice = !choice;
+		}
+		exitProgram = (choice == 0); // update exitProgram variable
+	};
+	print1();
+	while (loop)
+	{
+		int key = getConsoleInput();
+		if ((key == 3 && choice == 1) || (key == 4 && choice == 0))
+		{	
+			print1();
+		}
+		else if (key == 6)
+        {
+            if (!choice)
+            {   
+                
+                system("cls");
+                exitProgram = true;
+                break;
+                
+            }
+            
+            else // add this else block to change color back to default
+            {
+            	
+                setConsoleColor(BRIGHT_WHITE, BLACK);
+                return;
+                
+            }
+        }
+//		else
+//		{
+//			Controller::playSound(ERROR_SOUND);
+//		}
+	
+	}
+	
+	if (exitProgram) // check if user wants to exit
+		exit(0);
+	 system("cls");
+}
 
 void playEasy(){
 	string* background;
@@ -486,137 +630,9 @@ void displayStartMenu() {
     }
     
 }
-void printRectangle(int left, int top, int width, int height){
-	gotoXY(left, top);
-	putchar(218);
-	for (int i = 0; i < width; i++)
-		putchar(196);
-	putchar(191);
 
-	int i = 0;
-	for (; i < height; i++)
-	{
-		gotoXY(left, top + i + 1);
-		putchar(179);
-		gotoXY(left + width + 1, top + i + 1);
-		putchar(179);
-	}
 
-	gotoXY(left, top + i);
-	putchar(192);
-	for (i = 0; i < width; i++)
-		putchar(196);
-	putchar(217);
-}
-int getConsoleInput(){
-	int c = _getch();
-	// Arrow key
-	if (c == 0 || c == 224)
-	{
-		switch (_getch())
-		{
-		case KEY_UP:				//lên
-			return 2;
-		case KEY_LEFT:				//trái
-			return 3;
-		case KEY_RIGHT:				//phải
-			return 4;
-		case KEY_DOWN:				//xuống
-			return 5;
-		default:				//nút khác
-			return 0;
-		}
-	}
-	else
-	{
-		if (c == KEY_ESC)                  //esc
-			return 1;
-		else if (c == 87 || c == 119) //W, w
-			return 2;
-		else if (c == 65 || c == 97)  //A, a
-			return 3;
-		else if (c == 68 || c == 100) //D, d
-			return 4;
-		else if (c == 83 || c == 115) //S, s
-			return 5;
-		else if (c == 13)             //Enter
-			return 6;
-		else if (c == 72 || c == 104) //H, h
-			return 7;
-		else if (c == 77 || c == 109) // M, m
-			return 8;
-		else
-			return 0;                 //nút khác
-	}
-}
 
-void exitScreen(){
-	system("cls");
-	ShowCursor(false);
-	setConsoleColor(BRIGHT_WHITE, BLACK);
-	
-	setConsoleColor(BRIGHT_WHITE, BLACK);
-	printRectangle(34, 13, 35, 8);
-	printRectangle(37, 18, 7, 2);
-	printRectangle(60, 18, 6, 2);
-	setConsoleColor(BRIGHT_WHITE, RED);
-	gotoXY(0, 0);
-	drawLogo();
-	gotoXY(42, 16);
-	cout << "Do you want to exit?";
-	string str[2] = { "Yes", "No" };
-	int left[] = { 35,40,47,58,63,69 }, word[] = { 32,32,175,174 }, color[] = { BLACK, RED }, top = 19;
-	bool choice = 0;
-	bool loop = 1;
-	bool exitProgram = false; // new variable
-	auto print1 = [&]()
-	{
-		int i = 0;
-		while (i < 2)
-		{
-			PlaySound("click.wav", NULL, SND_ASYNC | SND_NOSTOP);
-		
-			gotoXY(left[choice * 3], top);        putchar(word[i * 2]);
-			gotoXY(left[choice * 3 + 1], top);    cout << str[choice];
-			gotoXY(left[choice * 3 + 2], top);    putchar(word[i * 2 + 1]);
-			if (!i++)
-				choice = !choice;
-		}
-		exitProgram = (choice == 0); // update exitProgram variable
-	};
-	print1();
-	while (loop)
-	{
-		int key = getConsoleInput();
-		if ((key == 3 && choice == 1) || (key == 4 && choice == 0))
-		{	
-			print1();
-		}
-		else if (key == 6)
-        {
-            if (!choice)
-            {   
-                
-                system("cls");
-                exitProgram = true;
-                break;
-            }
-            
-            else // add this else block to change color back to default
-            {
-                setConsolecolor(BRIGHT_WHITE, BLACK);
-                return;
-            }
-        }
-//		else
-//		{
-//			Controller::playSound(ERROR_SOUND);
-//		}
-	}
-	if (exitProgram) // check if user wants to exit
-		exit(0);
-	 
-}
 void instructionScreen(){
 	ShowCursor(false);
 	
@@ -1133,41 +1149,50 @@ void drawLeaderBoard() {
     }
 }
 
-}
+}//	printAnimation();
 void displayMenu(int option)
 {	
 	
-	
+        
 	system("cls");
     bool music_paused = true;
 	int selectedSong = 0;
 	showCursor(false);
+	if(!animationDisplayed){
+		PlaySound(TEXT("Wallpaper.wav"), NULL, SND_ASYNC);
+		printAnimation();
 	
-	bool loadMenu = 1;	
+    	animationDisplayed = true;
+	}
+	
+  // flag to track if animation has been displayed	
 //	intro();
+	int loadMenu = 1;
+	
+    
+	
+    
+    system("cls");
 
-	
-	
     while (true) {
-       
-        
+
 		HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
     	COORD curdsorPos = {0, 4}; // declare and initialize cursorPos
 
     	SetConsoleCursorPosition(console, cursorPos);
     	
-		printAnimation();
+		
 		 if (loadMenu)
 			drawLogo();
 			
 		
-		playSelectedSong();
+		
     
-//		PlaySound(TEXT("Wallpaper.wav"), NULL, SND_ASYNC);
+//		
     	
     	
     	while (true){
-    	
+    	if (loadMenu)
     	drawMenu(); // draw the menu
 		
 		
@@ -1195,26 +1220,29 @@ void displayMenu(int option)
                 case 0:
                 	displayStartMenu();
                 	loadMenu = 0;
+                	animationDisplayed = true;
                     break;
                 case 1:
                     instructionScreen();
                     loadMenu = 0;
+                    animationDisplayed = true;
                     break;
                 case 2:
 					drawLeaderBoard();
                     loadMenu = 0;
+                    animationDisplayed = true;
                     break;
                 case 3:
                 	displayMusicList();
                 	playSelectedSong();
                 	loadMenu = 0;
+                	animationDisplayed = true;
                 	system("cls");
                 	break;
                 
                 case 4:
                     exitScreen();
-                    loadMenu = 0;
-                    return; // exit the program if user chooses to exit
+                    animationDisplayed = true;
 					break;
 				}
                 _getch(); // wait for user to press a key
