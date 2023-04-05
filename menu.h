@@ -24,13 +24,14 @@
 #define _MEDIUM 6
 #define _HARD 8
 
+
 #endif
 using namespace std;
 
 struct Player{
-	string playerName;
+	char playerName[50];
 	int playerID;
-	string playerClass;
+	char playerClass[20];
 //	string gameMode;
 //	string gameScore;
 //	string time;
@@ -127,7 +128,7 @@ enum ConsoleColor {
     darkBlue = 9,
     darkGreen = 10,
     teal = 11,
-    darkRed = 12,
+    darkRed = 12,    
     purple = 13,
     orange = 14,
     lightGray = 15,
@@ -1083,9 +1084,7 @@ void drawLeaderBoard() {
 // Read data from binary file
 	std::vector<Player> players;
 	Player p;
-	std::string playerName;
-	int playerID;
-	std::string playerClass;
+
 	    
 	fstream fs("player_info.dat", ios::binary|ios::in|ios::app);
 	if (!fs) {
@@ -1093,11 +1092,11 @@ void drawLeaderBoard() {
 	    return;
 	}
 	
-	while (fs.read((char*)&playerName, sizeof(playerName))) {
-	    fs.read((char*)&playerID, sizeof(playerID));
-	    fs.read((char*)&playerClass, sizeof(playerClass));
+	while (fs.read(reinterpret_cast<char *>(&p.playerName), sizeof(p.playerName))) {
+	    fs.read(reinterpret_cast<char *>(&p.playerID), sizeof(p.playerID));
+	    fs.read(reinterpret_cast<char *>(&p.playerClass), sizeof(p.playerClass));
 	       
-	    Player p = {playerName, playerID, playerClass};
+//	    Player p = {playerName, playerID, playerClass};
 	    
 	    players.push_back(p);
 	}
@@ -1115,7 +1114,7 @@ void drawLeaderBoard() {
 	    gotoXY(10, 13 + i);
 	    std::cout << i + 1 << std::endl;
 	
-	    gotoXY(21, 13 + i);
+	    gotoXY(17, 13 + i);
 	    std::cout << players[i].playerName << std::endl;
 	
 	    gotoXY(33, 13 + i);
@@ -1184,12 +1183,6 @@ void displayMenu(int option)
 		
 		 if (loadMenu)
 			drawLogo();
-			
-		
-		
-    
-//		
-    	
     	
     	while (true){
     	if (loadMenu)
