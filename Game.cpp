@@ -21,6 +21,7 @@ COORD cursorpos; // used to set the position of the cursor
 int mapMaxWidth = 18, mapMaxHeight = 10;
 int cellWidth = 5, cellHeight = 3;
 int** map;
+string *background;
 
 int mapWidth = 6, mapHeight = 6;
 int xCur = 1, yCur = 1;
@@ -31,7 +32,19 @@ char pokemons[size*4][size*8];
 void printInterface();
 //void selectedBlock();
 //void unselectedBlock();
-
+void createBackground() {
+	ifstream bg;
+	if(size == 4)
+		bg.open("images\\easy.txt");
+	else
+		bg.open("images\\medium.txt");
+	int i = 0;
+	while (!bg.eof()) {
+		getline(bg, background[i]);
+		i++;
+	}
+	bg.close();
+}
 void ShowCursor(bool show)
 {
 	CONSOLE_CURSOR_INFO info = { 1, show };
@@ -282,15 +295,15 @@ void Game::setupGame() {
 	cout << "Please enter your name, ID, class shortly!";
 	gotoxy(35, 18);
 	cout << "Enter your Name:  ";
-	getline(cin, playerName);
+	cin.getline(playerName, 50);
 	
 	
     
-		while (playerName.empty()) {
+		while (playerName[0] == '\0') {
 			gotoxy(0, 27);
 			cout << "Please enter a valid name! ";
 			gotoxy(53, 18);
-			getline(cin, playerName);
+			cin.getline(playerName, 50);
 		}
 	
 		
@@ -305,7 +318,7 @@ void Game::setupGame() {
 		    int key = getch();
 		
 		    if (key == 13 || key == 0) { // handle Enter key or null character
-		        if (playerID == 0) { // no valid input entered
+		        if (playerID == '\0') { // no valid input entered
 		            gotoxy(0, 27);
 		            cout << "Please enter a valid integer for your ID! ";
 		            gotoxy(51, 20);
@@ -319,7 +332,7 @@ void Game::setupGame() {
 		        gotoxy(--x, y);
 		        putchar(' ');
 		        gotoxy(x, y);
-		        if (playerID > 0) {
+		        if (playerID != '\0') {
 		            playerID /= 10;
 		        }
 		    }
@@ -330,20 +343,16 @@ void Game::setupGame() {
 		    }
 		}
 		
-	
-		
-		
-		
 		gotoxy(35, 22);
 		cout << "Enter your class's name:  ";
-		getline(cin, playerClass);
+		cin.getline(playerClass, 20);
 		
 		// Check for empty input
-		while (playerClass.empty()) {
+		while (playerClass[0] == '\0') {
 			gotoxy(0, 27);
 			cout << "Please enter a valid class name! ";
 			gotoxy(61, 22);
-			getline(cin, playerClass);
+			cin.getline(playerClass, 20);
 		
 		}
 	saveData();
@@ -368,9 +377,9 @@ void Game::saveData() {
     }
 
     // Write data to binary file
-    outfile.write((char*)&playerName, sizeof(playerName));
-    outfile.write((char*)&playerID, sizeof(playerID)); 
-    outfile.write((char*)&playerClass, sizeof(playerClass));
+    outfile.write(reinterpret_cast<char *>(&playerName), sizeof(playerName));
+    outfile.write(reinterpret_cast<char *>(&playerID), sizeof(playerID)); 
+    outfile.write(reinterpret_cast<char *>(&playerClass), sizeof(playerClass));
     
 	
     outfile.close();
@@ -956,12 +965,70 @@ void showBoardHard(){
 		}
 	}
 }
-//// Move player right and select block
+
+//void selectedBlock(int x, int y, int color) {
+//	int left = 2, top = 2;
+//	setConsolecolor(color, BLACK);
+//	for (int i = y - 1; i <= y + 1; i++) {
+//		for (int j = x - 3; j <= x + 3; j++) {
+//			gotoxy(j, i);
+//			putchar(32);
+//		}
+//	}
+//	if (x % 8 == 1 && y % 4 == 2) {
+//		for (int i = y - 1; i <= y + 1; i++) {
+//			for (int j = x - 3; j <= x + 3; j++) {
+//				gotoxy(j, i);
+//				putchar(pokemons[i - 2][j / 8 - 1]);
+//			}
+//		}
+//	}
+//	else {
+//		for (int i = y - 1; i <= y + 1; i++) {
+//			for (int j = x - 3; j <= x + 3; j++) {
+//				gotoxy(j, i);
+//				putchar(background[i - top][j - left]);
+//			}
+//		}
+//	}
+//}
+//void unselectedBlock(int x, int y) {
+////	int r = getRAt(x, y);
+////	int c = getCAt(x, y);
+////	if(getCheck(x, y) != _DELETE)
+////		pBoard[r][c].setCheck(_NORMAL);
+////
+// int left = 2, top = 2;
+//    for (int i = y - 1; i <= y + 1; i++) {
+//        for (int j = x - 3; j <= x + 3; j++) {
+//            gotoxy(j, i);
+//            putchar(32);
+//        }
+//    }
+//    if (x % 8 == 1 && y % 4 == 2) {
+//        for (int i = y - 1; i <= y + 1; i++) {
+//            for (int j = x - 3; j <= x + 3; j++) {
+//                gotoxy(j, i);
+//                putchar(pokemons[i - 2][j / 8 - 1]);
+//            }
+//        }
+//    }
+//    else {
+//        for (int i = y - 1; i <= y + 1; i++) {
+//            for (int j = x - 3; j <= x + 3; j++) {
+//                gotoxy(j, i);
+//                putchar(background[i - top][j - left]);
+//            }
+//        }
+//    }
+//}
+
+// Move player right and select block
 //void Game::moveRight()
 //{
 //    if (_x < (size-1)*8)
 //    {
-//        Controller::playSound(MOVE_SOUND);
+//        PlaySound("click.wav", NULL, SND_ASYNC);
 //        unselectedBlock();
 //
 //        // Move player position right
@@ -970,10 +1037,10 @@ void showBoardHard(){
 //        // Select block at new position
 //        selectedBlock();
 //    }
-//    else
-//    {
-//        Controller::playSound(ERROR_SOUND);
-//    }
+////    else
+////    {
+////        Controller::playSound(ERROR_SOUND);
+////    }
 //}
 //
 //// Move player left and select block
@@ -981,7 +1048,7 @@ void showBoardHard(){
 //{
 //    if (_x > 0)
 //    {
-//        Controller::playSound(MOVE_SOUND);
+//        PlaySound("click.wav", NULL, SND_ASYNC);
 //        unselectedBlock();
 //
 //        // Move player position left
@@ -990,10 +1057,10 @@ void showBoardHard(){
 //        // Select block at new position
 //        selectedBlock();
 //    }
-//    else
-//    {
-//        Controller::playSound(ERROR_SOUND);
-//    }
+////    else
+////    {
+////        Controller::playSound(ERROR_SOUND);
+////    }
 //}
 //
 //// Move player down and select block
@@ -1001,7 +1068,7 @@ void showBoardHard(){
 //{
 //    if (_y < (size-1)*4)
 //    {
-//        Controller::playSound(MOVE_SOUND);
+//        PlaySound("click.wav", NULL, SND_ASYNC);
 //        unselectedBlock();
 //
 //        // Move player position down
@@ -1010,10 +1077,10 @@ void showBoardHard(){
 //        // Select block at new position
 //        selectedBlock();
 //    }
-//    else
-//    {
-//        Controller::playSound(ERROR_SOUND);
-//    }
+////    else
+////    {
+////        Controller::playSound(ERROR_SOUND);
+////    }
 //}
 //
 //// Move player up and select block
@@ -1021,7 +1088,7 @@ void showBoardHard(){
 //{
 //    if (_y > 0)
 //    {
-//        Controller::playSound(MOVE_SOUND);
+//        PlaySound("click.wav", NULL, SND_ASYNC);
 //        unselectedBlock();
 //
 //        // Move player position up
@@ -1030,12 +1097,12 @@ void showBoardHard(){
 //        // Select block at new position
 //        selectedBlock();
 //    }
-//    else
-//    {
-//        Controller::playSound(ERROR_SOUND);
-//    }
+////    else
+////    {
+////        Controller::playSound(ERROR_SOUND);
+////    }
 //}
-//
+
 //// Select block at player position and display pokemon letter
 //void Game::selectedBlock()
 //{
@@ -1049,15 +1116,6 @@ void showBoardHard(){
 //}
 //
 //// Deselect block at player position and clear display
-//void Game::unselectedBlock()
-//{
-//    if (board->getCheck(_x, _y) != _LOCK) {
-//        board->unselectedBlock(_x, _y);
-//    }
-//
-//    gotoxy(_x+2, _y+2);
-//    putchar(' ');
-//}
 
 
 
@@ -1090,22 +1148,25 @@ void Game::printInterface(){
 		cout << "PLAYER'S INFORMATION";
 		
 		gotoxy(65, 5);
-		if(playerName.empty()) {
-		    playerName = "unknown";
+		if(playerName[0] == '\0') {
+		    strcpy(playerName, "unknown");
 		    cout << "Player's name: " << playerName;
 		} else {
 		    cout << "Player's name: " << playerName;
 		}
 		gotoxy(65, 7);
 		if(playerID == 0) {
-		    playerID = -1;
+//		    playerID[0] = '-';
+//		    playerID[1] = '1';
+//		    playerID[2] = '\0';
+			playerID = -1;
 		    cout << "Student's ID: unknown";
 		} else {
 		    cout << "Student's ID: " << playerID;
 		}
 		gotoxy(65, 9);
-		if(playerClass.empty()) {
-		    playerClass = "unknown";
+		if(playerClass[0] == '\0') {
+		    strcpy(playerClass, "unknown");
 		    cout << "Class: " << playerClass;
 		} else {
 		    cout << "Class: " << playerClass;
@@ -1190,22 +1251,25 @@ void Game::printInterfaceHard(){
 		cout << "PLAYER'S INFORMATION";
 		
 		gotoxy(78, 7);
-		if(playerName.empty()) {
-		    playerName = "unknown";
+		if(playerName[0] == '\0') {
+		    strcpy(playerName, "unknown");
 		    cout << "Player's name: " << playerName;
 		} else {
 		    cout << "Player's name: " << playerName;
 		}
 		gotoxy(77, 9);
 		if(playerID == 0) {
-		    playerID = -1;
+//		    playerID[0] = '-';
+//		    playerID[1] = '1';
+//		    playerID[2] = '\0';
+			playerID = -1;
 		    cout << "Student's ID: unknown";
 		} else {
 		    cout << "Student's ID: " << playerID;
 		}
 		gotoxy(78, 11);
-		if(playerClass.empty()) {
-		    playerClass = "unknown";
+		if(playerName[0] == '\0') {
+		    strcpy(playerClass, "unknown");
 		    cout << "Class: " << playerClass;
 		} else {
 		    cout << "Class: " << playerClass;
@@ -1276,6 +1340,29 @@ void Game::startGame()
 	
 	while(isPlaying = true){
 		printInterface();
+		// Listen for user input
+//        if (_kbhit()) {
+//            char ch = _getch();
+//            switch(ch) {
+//                case 'a': // Move left
+//                    moveLeft();
+//                    break;
+//                case 'd': // Move right
+//                    moveRight();
+//                    break;
+//                case 'w': // Move up
+//                    moveUp();
+//                    break;
+//                case 's': // Move down
+//                    moveDown();
+//                    break;
+//                case 'q': // Quit game
+//                    isPlaying = false;
+//                    break;
+//                default:
+//                    break;
+//            }
+//        }
     }
 	
 	saveData();
@@ -1289,6 +1376,29 @@ void Game::startGameHard()
 	
 	while(isPlaying = true){
 		printInterfaceHard();
+		// Listen for user input
+//        if (_kbhit()) {
+//            char ch = _getch();
+//            switch(ch) {
+//                case 'a': // Move left
+//                    moveLeft();
+//                    break;
+//                case 'd': // Move right
+//                    moveRight();
+//                    break;
+//                case 'w': // Move up
+//                    moveUp();
+//                    break;
+//                case 's': // Move down
+//                    moveDown();
+//                    break;
+//                case 'q': // Quit game
+//                    isPlaying = false;
+//                    break;
+//                default:
+//                    break;
+//            }
+//        }
     }
 	
 	saveData();
