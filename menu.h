@@ -32,7 +32,8 @@ struct Player{
 	char playerName[50];
 	int playerID;
 	char playerClass[20];
-//	string gameMode;
+	char modeChar[20];
+	
 //	string gameScore;
 //	string time;
 };
@@ -767,32 +768,7 @@ void instructionScreen(){
 //		Controller::playSound(ERROR_SOUND);
 //	}
 }
-//void playMusic(string filename) {
-//    PlaySound(filename.c_str(), NULL, SND_ASYNC);
-//}
-//void displayCurrentSong() {
-//    // Move the cursor to the bottom right corner of the screen
-//    gotoXY(78, 27);
-//    // Display the current playing song
-//    std::cout << "Now Playing: " << songList[currentSongIndex];
-//}
 
-//    std::string filekey;
-//    // Stop the current song
-//    PlaySound(NULL, NULL, 0);
-//    vector<string> musicList = {"Despacito.wav", "See_You_Again.wav", "Wallpaper.wav"};
-//    int currentSongIndex = 0;
-//    // Update the current song index
-//    currentSongIndex = key - 1; // Subtract 1 since the index starts at 0
-//    if (currentSongIndex < 0) {
-//        currentSongIndex = 0;
-//    } else if (currentSongIndex >= musicList.size()) {
-//        currentSongIndex = musicList.size() - 1;
-//    }
-//    
-//    // Play the new song
-//    playMusic(musicList[currentSongIndex]);
-//}
 
 
 void displayMusicList() {
@@ -1092,14 +1068,19 @@ void drawLeaderBoard() {
 	    return;
 	}
 	
-	while (fs.read(reinterpret_cast<char *>(&p.playerName), sizeof(p.playerName))) {
+	while (fs.good()){
+		fs.read(reinterpret_cast<char *>(&p.playerName), sizeof(p.playerName));
 	    fs.read(reinterpret_cast<char *>(&p.playerID), sizeof(p.playerID));
 	    fs.read(reinterpret_cast<char *>(&p.playerClass), sizeof(p.playerClass));
+	    fs.read(reinterpret_cast<char *>(&p.modeChar), sizeof(p.modeChar));
 	       
 //	    Player p = {playerName, playerID, playerClass};
 	    
+	    if(fs.eof()) break;
 	    players.push_back(p);
 	}
+
+	
 	fs.close();
 //	for (int i = 0; i < n; i++) {
 //		for (int j = i + 1; j < n; j++) {
@@ -1122,10 +1103,13 @@ void drawLeaderBoard() {
 	
 	    gotoXY(52, 13 + i);
 	    std::cout << players[i].playerClass << std::endl;
+	    
+		gotoXY(67, 13 + i);
+	    std::cout << players[i].modeChar << std::endl;
 //	
 //	    gotoXY(84, 13 + i);
-//	    std::cout << players[i].score << std::endl;
-//	
+//	    std::cout << players[i].modeChar << std::endl;
+	
 //	    gotoXY(101, 13 + i);
 //	    std::cout << players[i].time << std::endl;
 	} 
