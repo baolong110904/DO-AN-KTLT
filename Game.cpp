@@ -296,9 +296,6 @@ void Game::setupGame() {
 	gotoxy(35, 18);
 	cout << "Enter your Name:  ";
 	cin.getline(playerName, 50);
-	
-	
-    
 		while (playerName[0] == '\0') {
 			gotoxy(0, 27);
 			cout << "Please enter a valid name! ";
@@ -309,21 +306,18 @@ void Game::setupGame() {
 		
 		gotoxy(35, 20);
 		cout << "Enter your ID:  ";
-		
-		
 		int x = 51, y = 20;
 		int playerID = 0;
 		bool validID = false;
 		while (!validID) {
-		    int key = getch();
-		
+			int key = getch();
 		    if (key == 13 || key == 0) { // handle Enter key or null character
-		        if (playerID == '\0') { // no valid input entered
+		        if (playerID == 0) { // no valid input entered
 		            gotoxy(0, 27);
 		            cout << "Please enter a valid integer for your ID! ";
 		            gotoxy(51, 20);
-		        }
-		        else {
+		        }else {
+		        
 		            validID = true;
 		            break;
 		        }
@@ -332,7 +326,7 @@ void Game::setupGame() {
 		        gotoxy(--x, y);
 		        putchar(' ');
 		        gotoxy(x, y);
-		        if (playerID != '\0') {
+		        if (playerID > 0) {
 		            playerID /= 10;
 		        }
 		    }
@@ -374,12 +368,30 @@ void Game::saveData() {
     if (!outfile) {
         std::cerr << "Failed to open file for writing.\n";
         return;
+    } 
+	int playerID = 0;
+	
+	// Convert _mode to char
+    char modeChar[20];
+    switch (_mode) {
+        case _EASY:
+            strcpy(modeChar, "Easy");
+            break;
+        case _MEDIUM:
+            strcpy(modeChar, "Medium");
+            break;
+        case _HARD:
+            strcpy(modeChar, "Hard");
+            break;
+        default:
+            modeChar[0] = '\0';
+            break;
     }
-
     // Write data to binary file
     outfile.write(reinterpret_cast<char *>(&playerName), sizeof(playerName));
     outfile.write(reinterpret_cast<char *>(&playerID), sizeof(playerID)); 
     outfile.write(reinterpret_cast<char *>(&playerClass), sizeof(playerClass));
+    outfile.write(reinterpret_cast<char *>(&modeChar), sizeof(modeChar));
     
 	
     outfile.close();
@@ -1022,7 +1034,6 @@ void showBoardHard(){
 //        }
 //    }
 //}
-
 // Move player right and select block
 //void Game::moveRight()
 //{
@@ -1128,10 +1139,14 @@ void Game::printInterface(){
 //	board->renderBoard();
 //	board->buildBoardData();
 	if(_mode == _EASY){
+	
         showBoardEasy();
+        
     }
     else if(_mode == _MEDIUM){
+    
         showBoardMedium();
+        
     }
 	bool Loop = 1;
 	ShowCursor(false);
@@ -1156,13 +1171,10 @@ void Game::printInterface(){
 		}
 		gotoxy(65, 7);
 		if(playerID == 0) {
-//		    playerID[0] = '-';
-//		    playerID[1] = '1';
-//		    playerID[2] = '\0';
-			playerID = -1;
-		    cout << "Student's ID: unknown";
+		    playerID = -1;
+		    cout << "Player's ID: " << playerID;
 		} else {
-		    cout << "Student's ID: " << playerID;
+			 cout << "Student's ID: " << playerID;
 		}
 		gotoxy(65, 9);
 		if(playerClass[0] == '\0') {
@@ -1227,6 +1239,7 @@ void Game::printInterface(){
 	}
 			
 }
+	
 }
 void Game::printInterfaceHard(){
 	
@@ -1235,7 +1248,11 @@ void Game::printInterfaceHard(){
 	
 //	board->renderBoard();
 //	board->buildBoardData();
-	showBoardHard();
+	if(_mode == _HARD){
+	
+		showBoardHard();
+		
+	}
 	bool Loop = 1;
 	ShowCursor(false);
 	while(Loop){ 
@@ -1259,12 +1276,10 @@ void Game::printInterfaceHard(){
 		}
 		gotoxy(77, 9);
 		if(playerID == 0) {
-//		    playerID[0] = '-';
-//		    playerID[1] = '1';
-//		    playerID[2] = '\0';
 			playerID = -1;
-		    cout << "Student's ID: unknown";
+			cout << "Player's ID: " << playerID;
 		} else {
+			
 		    cout << "Student's ID: " << playerID;
 		}
 		gotoxy(78, 11);
@@ -1330,6 +1345,7 @@ void Game::printInterfaceHard(){
 	}
 			
 }
+	
 }
 void Game::startGame() 
 {
@@ -1362,9 +1378,10 @@ void Game::startGame()
 //                default:
 //                    break;
 //            }
-//        }
-    }
+//        }  }
 	
+
+}
 	saveData();
 }
 void Game::startGameHard() 
@@ -1376,7 +1393,8 @@ void Game::startGameHard()
 	
 	while(isPlaying = true){
 		printInterfaceHard();
-		// Listen for user input
+	
+}	// Listen for user input
 //        if (_kbhit()) {
 //            char ch = _getch();
 //            switch(ch) {
@@ -1399,8 +1417,5 @@ void Game::startGameHard()
 //                    break;
 //            }
 //        }
-    }
-	
-	saveData();
+saveData();
 }
-
