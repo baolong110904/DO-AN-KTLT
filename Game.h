@@ -14,21 +14,24 @@ public:
     void saveData();
     void startGame();
     void startGameHard();
-    void selectedBlock();
-	void unselectedBlock(); 
+    
 //    void printBackground();
     void printInterface(); 
     void printInterfaceHard();
-	 
-	void moveRight();
-	void moveLeft();
-	void moveUp();
-	void moveDown(); 
+	void displayStartMenu();
+//	
+//	void selectedBlock();
+//	void unselectedBlock();
+//	
+//	void moveRight();
+//	void moveLeft();
+//	void moveUp();
+//	void moveDown(); 
    
 
-	string playerName;
-    int playerID;
-    string playerClass;
+	char playerName[50];
+	char playerClass[20];
+    char playerID[20];
     int _mode;
     int score;
 
