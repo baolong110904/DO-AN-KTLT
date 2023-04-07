@@ -30,7 +30,7 @@ using namespace std;
 
 struct Player{
 	char playerName[50];
-	int playerID;
+	char playerID[20];
 	char playerClass[20];
 	char modeChar[20];
 	
@@ -198,7 +198,63 @@ void drawImage1(){
 	cout << image1;
 	setColor(LightGray); // reset the console color
 }
+void drawPikachu(string fileName, int x, int y) {
+    ifstream file("pikachu.txt");
 
+    if (file.is_open()) {
+        char c;
+        int posX = 53, posY = 15;
+        while (file.get(c)) {
+            if (c == 'O' || c == '7') {
+                
+                gotoxy(posX, posY);
+                setcolor(Orange);
+                cout << c;
+                posX++;
+            }
+            else if (c == 'Y') {
+                
+                gotoxy(posX, posY);
+                setcolor(Yellow);
+                cout << c;
+                posX++;
+            }
+            else if (c == 'R') {
+                
+                gotoxy(posX, posY);
+                setcolor(Red);
+                cout << c;
+                posX++;
+            }
+            else if (c == 'P') {
+                
+                gotoxy(posX, posY);
+                setcolor(DarkRed);
+                cout << c;
+                posX++;
+            }
+             else if (c == 'W') {
+                
+                gotoxy(posX, posY);
+                setcolor(White);
+                cout << c;
+                posX++;
+            }
+            else if (c == '\n') {
+                posY++;
+                posX = x;
+            }
+            else {
+                
+                gotoxy(posX, posY);
+                setcolor(Gray);
+                cout << c;
+                posX++;
+            }
+        }
+        file.close();
+    }
+}
 
 void drawImage3(){	
 	setColor(Orange);
@@ -1097,11 +1153,11 @@ void drawLeaderBoard() {
 	
 	    gotoXY(17, 13 + i);
 	    std::cout << players[i].playerName << std::endl;
-	
+//	
 	    gotoXY(33, 13 + i);
 	    std::cout << players[i].playerID << std::endl;
 	
-	    gotoXY(52, 13 + i);
+	    gotoXY(50, 13 + i);
 	    std::cout << players[i].playerClass << std::endl;
 	    
 		gotoXY(67, 13 + i);
@@ -1164,9 +1220,11 @@ void displayMenu(int option)
 
     	SetConsoleCursorPosition(console, cursorPos);
     	
-		
+		gotoXY(53, 15);
+		drawPikachu("pikachu.txt", 53, 15);
 		 if (loadMenu)
 			drawLogo();
+			
     	
     	while (true){
     	if (loadMenu)
