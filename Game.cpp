@@ -9,9 +9,11 @@
 #include <string>
 #include <chrono>
 
+
 #define _EASY 4
 #define _MEDIUM 6
 #define _HARD 8
+
 using namespace std;
 
 
@@ -22,16 +24,19 @@ int mapMaxWidth = 18, mapMaxHeight = 10;
 int cellWidth = 5, cellHeight = 3;
 int** map;
 string *background;
-
+int heightEz = 6, widthEz = 6;
 int mapWidth = 6, mapHeight = 6;
 int xCur = 1, yCur = 1;
 bool selected[16] = { false };
-
+int width = 10, height = 10;
+bool isDisplayBoard = false;
 const int size = _EASY;
 char pokemons[size*4][size*8];
 void printInterface();
+void printCongratulationBoard();
 //void selectedBlock();
 //void unselectedBlock();
+
 void createBackground() {
 	ifstream bg;
 	if(size == 4)
@@ -55,6 +60,14 @@ void gotoxy(int x, int y){
     coord.X = x;
     coord.Y = y;
     SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
+}
+void clearconsole() // Xoá nội dung có sẵn trong console 
+{
+    COORD cursorPosition;
+    cursorPosition.X = 0;
+    cursorPosition.Y = 0;
+
+    SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), cursorPosition);
 }
 
 enum Consolecolor {
@@ -90,7 +103,7 @@ void setcolor(Consolecolor color) {
 }
 
 void L(string fileName, int x, int y) {
-    ifstream file("L.txt");
+    ifstream file("text\\L.txt");
 
     if (file.is_open()) {
         char c;
@@ -120,7 +133,7 @@ void L(string fileName, int x, int y) {
     }
 }
 void O(string fileName, int x, int y) {
-    ifstream file("O.txt");
+    ifstream file("text\\O.txt");
 
     if (file.is_open()) {
         char c;
@@ -150,7 +163,7 @@ void O(string fileName, int x, int y) {
     }
 }
 void G(string fileName, int x, int y) {
-    ifstream file("G.txt");
+    ifstream file("text\\G.txt");
 
     if (file.is_open()) {
         char c;
@@ -180,7 +193,7 @@ void G(string fileName, int x, int y) {
     }
 }
 void I(string fileName, int x, int y) {
-    ifstream file("I.txt");
+    ifstream file("text\\I.txt");
 
     if (file.is_open()) {
         char c;
@@ -210,7 +223,7 @@ void I(string fileName, int x, int y) {
     }
 }
 void N(string fileName, int x, int y) {
-    ifstream file("N.txt");
+    ifstream file("text\\N.txt");
 
     if (file.is_open()) {
         char c;
@@ -267,14 +280,14 @@ void setConsolecolor(int textColor, int bgColor) {
     SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), (textColor + (bgColor * 16)));
 }
 
-void Game::setupGame() {
+void Game::setupGame(player &p) {
 	system("cls");
 	// Print rectangle to cover the screen
-	L("L.txt", 5, 1);
-	O("0.txt", 25, 1);
-	G("G.txt", 44, 1);
-	I("I.txt", 63, 1);
-	N("N.txt", 83, 1);
+	L("text\\L.txt", 5, 1);
+	O("text\\0.txt", 25, 1);
+	G("text\\G.txt", 44, 1);
+	I("text\\I.txt", 63, 1);
+	N("text\\N.txt", 83, 1);
 	
 	ShowCursor(true);
 	// Print input fields and get player information
@@ -284,146 +297,89 @@ void Game::setupGame() {
 	cout << "Please enter your name, ID, class shortly!";
 	gotoxy(35, 18);
 	cout << "Enter your Name:  ";
-	cin.getline(playerName, 50);
-		while (playerName[0] == '\0') {
+	cin.getline(p.playerName, 50);
+		while (p.playerName[0] == '\0') {
 			gotoxy(0, 27);
 			cout << "Please enter a valid name! ";
 			gotoxy(53, 18);
-			cin.getline(playerName, 50);
+			cin.getline(p.playerName, 50);
 		}
 	
 		
 		gotoxy(35, 20);
 		cout << "Enter your ID:  ";
-		cin.getline(playerID, 20);
-		while(playerID[0] == '\0'){
+		cin.getline(p.playerID, 20);
+		while(p.playerID[0] == '\0'){
 			gotoxy(0, 27);
 			cout << "Please enter a valid ID! ";
 			gotoxy(51, 20);
-			cin.getline(playerID, 20);
+			cin.getline(p.playerID, 20);
 		}
-//		int x = 51, y = 20;
-//		int playerID = 0;
-//		bool validID = false;
-//		while (!validID) {
-//			int key = getch();
-//		    if (key == 13 || key == 0) { // handle Enter key or null character
-//		        if (playerID == 0) { // no valid input entered
-//		            gotoxy(0, 27);
-//		            cout << "Please enter a valid integer for your ID! ";
-//		            gotoxy(51, 20);
-//		        }else {
-//		        
-//		            validID = true;
-//		            break;
-//		        }
-//		    }
-//		    else if (key == 8 && x > 51) { // handle backspace key
-//		        gotoxy(--x, y);
-//		        putchar(' ');
-//		        gotoxy(x, y);
-//		        if (playerID > 0) {
-//		            playerID /= 10;
-//		        }
-//		    }
-//		    else if (isdigit(key) && x < 57) { // handle numeric input
-//		        putchar(key);
-//		        playerID = playerID * 10 + (key - '0');
-//		        gotoxy(++x, y);
-//		    }
-//		}
-//		
+
 		gotoxy(35, 22);
 		cout << "Enter your class's name:  ";
-		cin.getline(playerClass, 20);
+		cin.getline(p.playerClass, 20);
 		
 		// Check for empty input
-		while (playerClass[0] == '\0') {
+		while (p.playerClass[0] == '\0') {
 			gotoxy(0, 27);
 			cout << "Please enter a valid class name! ";
 			gotoxy(61, 22);
-			cin.getline(playerClass, 20);
+			cin.getline(p.playerClass, 20);
 		
 		}
-	saveData();
+//	saveData(p);
 	system("cls");
 		
 }
 
 	
-//// Set mode based on difficulty level
-//	if (_mode == 4)
-//		strcpy_s(mode, "EASY");
-//	else 
-//		strcpy_s(mode, "MEDIUM");
 
 
-void Game::saveData() {
-
-    std::ofstream outfile("player_info.dat", std::ios::binary|ios::out|ios::app);
+void Game::saveData(player &p) {
+    std::ofstream outfile("player_info.bin", std::ios::binary|ios::out|ios::app);
     if (!outfile) {
         std::cerr << "Failed to open file for writing.\n";
         return;
     } 
 //	char playerID = '\0';
 	
-	// Convert _mode to char
-    char modeChar[20];
-    switch (_mode) {
-        case _EASY:
-            strcpy(modeChar, "Easy");
-            break;
-        case _MEDIUM:
-            strcpy(modeChar, "Medium");
-            break;
-        case _HARD:
-            strcpy(modeChar, "Hard");
-            break;
-        default:
-            modeChar[0] = '\0';
-            break;
-    }
-    // Write data to binary file
-    outfile.write(reinterpret_cast<char *>(&playerName), sizeof(playerName));
-	outfile.write(reinterpret_cast<char *>(&playerID), sizeof(playerID));
-    outfile.write(reinterpret_cast<char *>(&playerClass), sizeof(playerClass));
-    outfile.write(reinterpret_cast<char *>(&modeChar), sizeof(modeChar));
+	// Convert mode enum to char array
     
+//    switch (p._mode) {
+//        case _EASY:
+//            strcpy(p.modeChar, "Easy");
+//            break;
+//        case _MEDIUM:
+//            strcpy(p.modeChar, "Medium");
+//            break;
+//        case _HARD:
+//            strcpy(p.modeChar, "Hard");
+//            break;
+//        default:
+//            p.modeChar[0] = '\0';
+//            break;
+//    }
+//     Write data to binary file
+    outfile.write(reinterpret_cast<char *>(&p.playerName), sizeof(p.playerName));
+	outfile.write(reinterpret_cast<char *>(&p.playerID), sizeof(p.playerID));
+    outfile.write(reinterpret_cast<char *>(&p.playerClass), sizeof(p.playerClass));
+    outfile.write(reinterpret_cast<char *>(&p._mode), sizeof(p._mode));
+//    outfile.write(reinterpret_cast<char *>(&p.mode), sizeof(p._mode));
+    outfile.write(reinterpret_cast<char *>(&p.point), sizeof(p.point));
 	
     outfile.close();
-   
-    system("cls");
 }
 
-//void Game::printBackground() {
-//    // Define file paths for background images
-//    string easyFilePath = "images\\easy.txt";
-//    string mediumFilePath = "images\\medium.txt";
-//    string filePath;
-//
-//    // Choose background image based on difficulty level
-//    if(_mode == 4) {
-//        filePath = easyFilePath;
-//    } else if(_mode == 6) {
-//        filePath = mediumFilePath;
-//    } else {
-//        // Default to easy background if difficulty level is not recognized
-//        filePath = easyFilePath;
+//void Game::savePoint(int &point){
+//	
+//    std::ofstream file("point.bin", std::ios::binary|ios::out|ios::app);
+//    if(!file){
+//        std::cerr << "Error: could not open file for writing\n";
+//        return; 
 //    }
-//
-//    // Read background image from file
-//    ifstream infile(filePath); // Open file for reading
-//    string line;
-//    while (getline(infile, line)) { // Read each line of the file
-//        // Replace difficulty level markers with the appropriate number of spaces
-//        if(_mode == 4) {
-//            line.replace(line.find("_EASY"), 5, string(_EASY, ' '));
-//        } else if(_mode == 6) {
-//            line.replace(line.find("_MEDIUM"), 7, string(_MEDIUM, ' '));
-//        }
-//        cout << line << endl; // Print the line to the console
-//    }
-//    infile.close(); // Close the file
+//    file.write(reinterpret_cast<char *>(&point), sizeof(point));
+//    file.close();
 //}
 int getConsoleinput(){
 	int c = _getch();
@@ -491,7 +447,7 @@ void exitscreen(){
 		int i = 0;
 		while (i < 2)
 		{
-			PlaySound("click.wav", NULL, SND_ASYNC);
+			PlaySound("music\\click.wav", NULL, SND_ASYNC);
 			
 			gotoxy(left[choice * 3], top);        putchar(word[i * 2]);
 			gotoxy(left[choice * 3 + 1], top);    cout << str[choice];
@@ -521,6 +477,8 @@ void exitscreen(){
             
             else // add this else block to change color back to default
             {
+            	system("cls");
+                ShowCursor(false);	
                 setConsolecolor(LIGHT_YELLOW, BLACK); 
                 return;
             }
@@ -528,7 +486,8 @@ void exitscreen(){
 	}
 	if (exitProgram) // check if user wants to exit
 		exit(0);
-
+	else
+		return;
 //		else
 //		{
 //			Controller::playSound(ERROR_SOUND);
@@ -613,20 +572,20 @@ void instructionscreen(){
 	
 
 	gotoxy(left1 + 10, top + 14);
-	putchar(249); cout << " I Matching: +1 points";
+	putchar(249); cout << " I Matching: +3 points";
 	
 	gotoxy(left1 + 40, top + 14);
-	putchar(249); cout << " L Matching: +2 points";
+	putchar(249); cout << " L Matching: +3 points";
 	setcolor(Yellow);
 	gotoxy(left1 + 10, top + 15);
 	putchar(249); cout << " Z Matching: +3 points";
 	setcolor(Green);
 	gotoxy(left1 + 40, top + 15);
-	putchar(249); cout << " U Matching: +4 points";
+	putchar(249); cout << " U Matching: +3 points";
 	
 	setcolor(Red);
 	gotoxy(left1 + 10, top + 16);
-	putchar(249); cout << " Not Matched: -2 points";
+	putchar(249); cout << " Not Matched: -3 points";
 	
 	setcolor(Red);
 	gotoxy(left1 + 40, top + 16);
@@ -670,547 +629,1879 @@ void instructionscreen(){
 //	}
 }
 
-	 
-void showBoardEasy(){
-    system("cls");
-	ShowCursor(false);
-	int left = 2, top = 2, size = 4; 
-	
-    gotoxy(left + 1, top);
-    putchar(201);
-    for (int i = 1; i < size * 8; i++)
-    {
-        Sleep(5);
-        if (i % 8 == 0)
-            putchar(205);
-        else
-            putchar(205);
-    }
-    putchar(187);
 
-    // Draw right line
-    for (int i = 1; i < size * 4; i++)
-    {
-        Sleep(10);
-        gotoxy(size * 8 + left + 1, i + top);
-        if (i % 4 != 0)
-            putchar(186);
-        else
-            putchar(186);
-    }
-    gotoxy(size * 8 + left + 1, size * 4 + top);
-    putchar(188);
+////////////////////////////GAME CHECK///////////////////////////////////
 
-    // Draw bottom line
-    for (int i = 1; i < size * 8; i++)
-    {
-        gotoxy(size * 8 + left - i + 1, size * 4 + top);
-        Sleep(5);
-        if (i % 8 == 0)
-            putchar(205);
-        else
-            putchar(205);
-    }
-    gotoxy(left + 1, size * 4 + top);
-    putchar(200);
 
-    // Draw left line
-    for (int i = 1; i < size * 4; i++)
-    {
-        Sleep(10);
-        gotoxy(left + 1, size * 4 + top - i);
-        if (i % 4 != 0)
-            putchar(186);
-        else
-            putchar(186);
-    }
-
-    // Draw vertical lines
-    for (int i = 1; i < size * 4; i++)
-    {
-        for (int j = 8; j < size * 8; j += 8)
-        {
-            if (i % 4 != 0)
-            {
-                gotoxy(j + left + 1, i + top);
-                putchar(179);
+bool linecheck(pokemon** map, int x1, int y1, int x2, int y2) {
+    if (x1 == x2) {
+        int y, x, dem = 0;
+        x = min(y1, y2);
+        y = max(y1, y2);
+        for (int i = x; i <= y; i++) {
+            if (map[x1][i].isValid) {
+                dem++;
+                if (dem == 2) return false;
             }
         }
-        Sleep(10);
+        if ((dem == 1) && ((!map[x1][y1].isValid && map[x2][y2].isValid) || (map[x1][y1].isValid && !map[x2][y2].isValid))) {//sai
+            return true;
+        }
+        else if (dem == 0) {
+            return true;
+        }
+        return false;
+    }
+    if (y1 == y2) {
+        int x, y, dem = 0;
+        x = min(x1, x2);
+        y = max(x1, x2);
+        for (int i = x; i <= y; i++) {
+            if (map[i][y1].isValid) {
+                dem++;
+                if (dem == 2) return false;
+            }
+        }
+        if ((dem == 1) && ((!map[x1][y1].isValid && map[x2][y2].isValid) || (map[x1][y1].isValid && !map[x2][y2].isValid))) {//sai
+            return true;
+        }
+        else if (dem == 0) {
+            return true;
+        }
+        return false;
+    }
+    return false;
+}
+
+
+bool Icheck(pokemon** map, int x1, int y1, int x2, int y2) {
+    if (x1 == x2) {
+
+    for (int i = min(y1, y2) + 1; i < max(y1, y2); i++) {
+        if (map[x1][i].isValid) {
+            return false;
+        }
+    }
+    return true;
+    }
+    else if (y1 == y2) {
+
+    for (int i = min(x1, x2) + 1; i < max(x1,x2); i++) {
+        if (map[i][y1].isValid) {
+            return false;
+        }
+    }
+    return true;
+    }
+    return false;
+}
+
+bool Lcheck(pokemon** map, int x1, int y1, int x2, int y2) {
+    if (x1 == x2 || y1 == y2) {
+        return false;
+    }
+    bool check1, check2;
+    if (!map[x1][y2].isValid) {
+        check1 = Icheck(map, x1, y1, x1, y2);
+        check2 = Icheck(map, x2, y2, x1, y2);
+        if (check1 && check2) {
+            return true;
+        }
+    }
+    if (!map[x2][y1].isValid) {
+        check1 = Icheck(map, x1, y1, x2, y1);
+        check2 = Icheck(map, x2, y2, x2, y1);
+        if (check1 && check2) {
+            return true;
+        }
+    }
+    return false;
+}
+
+
+
+bool Zcheck(pokemon** map, int x1, int y1, int x2, int y2)
+{
+    if (x1 == x2 || y1 == y2)
+        return false;
+    bool check1, check2, check3;
+    for (int i = min(y1, y2) + 1; i < max(y1, y2); i++)
+    {
+        check1 = Icheck(map, x1, y1, x1, i);
+        check2 = Icheck(map, x1, i, x2, i);
+        check3 = Icheck(map, x2, y2, x2, i);
+        if (check1 && check2 && check3 && !map[x1][i].isValid && !map[x2][i].isValid)
+            return true;
+    }
+    for (int i = min(x1, x2) + 1; i < max(x1, x2); i++)
+    {
+        check1 = Icheck(map, x1, y1, i, y1);
+        check2 = Icheck(map, i, y1, i, y2);
+        check3 = Icheck(map, x2, y2, i, y2);
+        if (check1 && check2 && check3 && !map[i][y1].isValid && !map[i][y2].isValid)
+            return true;
+    }
+    return false;
+}
+// Ucheck for easy level (4x4 size)
+bool UcheckEasyLevel(pokemon** map, int x1, int y1, int x2, int y2) {
+    if (((x1 == x2) && (x1 == 1 || x1 == 6 - 2) || ((y1 == y2) && (y1 == 1 || y2 == 6 - 2)))) {
+        return true;
+    }
+    bool c1, c2, c3;
+    int x, y;
+
+    x = min(y2, y1);
+    y = max(y2, y1);
+    for (int i = 1; i < 6 - 1; i++) {
+        if (i <= x || i >= y) {
+            c3 = linecheck(map, x1, i, x2, i);
+            if (c3) {
+                c1 = linecheck(map, x1, y1, x1, i);
+                c2 = linecheck(map, x2, y2, x2, i);
+                if (c1 && c2) {
+                    return true;
+                }
+            }
+            else if (i == 1 || i == (6 - 2)) {
+                c1 = linecheck(map, x1, y1, x1, i);
+                c2 = linecheck(map, x2, y2, x2, i);
+                if ((c1 && c2) || (c1 && y2 == i) || (y1 == i && c2)) {
+                    return true;
+                }
+            }
+        }
     }
 
-    // Draw horizontal lines
-    for (int i = 1; i < size * 8; i++)
-    {
-        for (int j = 4; j < size * 4; j += 4)
-        {
-            gotoxy(i + left + 1, j + top);
-            if (i % 8 == 0)
-                //putchar(197);
-                putchar(32);
-            else
-                putchar(196);
+
+    for (int i = 1; i < 6 - 1; i++) {
+        if (i <= x || i >= y) {
+            c3 = linecheck(map, i, y1, i, y2);
+            if (c3) {
+                c1 = linecheck(map, x1, y1, i, y1);
+                c2 = linecheck(map, x2, y2, i, y2);
+                if (c1 && c2) {
+                    return true;
+                }
+            }
+            else if (i == 1 || i == (6 - 2)) {
+                c1 = linecheck(map, x1, y1, i, y1);
+                c2 = linecheck(map, x2, y2, i, y2);
+                if ((c1 && c2) || (c1 && x2 == i) || (x1 == i && c2)) {
+                    return true;
+                }
+            }
         }
-        Sleep(5);
     }
-    // Fill cells with random letters A to D
-	srand(time(NULL)); // Seed the random number generator with current time
-	
-	for (int i = 1; i <= size * 4; i+=4)
-	{
-		for (int j = 8; j <= size * 8; j+=8)
-	    {
-	        char pokemon = 'A' + rand() % 4; // Generate random letter from A to D
-	        gotoxy(left + j - 3, top + i + 1); // Position cursor at center of cell
-	        putchar(pokemon); // Print the random letter
-	        
-	                                  
-	        // Store the pokemons in the matrix
-        	pokemons[i-1][(j-8)/8] = pokemon;
-		}
-	}
-	// Initialize player position
+    return false;
+}
+
+bool UcheckMedLevel(pokemon** map, int x1, int y1, int x2, int y2) {
+    if (((x1 == x2) && (x1 == 1 || x1 == 8 - 2) || ((y1 == y2) && (y1 == 1 || y2 == 8-2)))) {
+        return true;
+    }
+    bool c1, c2, c3;
+    int x, y;
+
+    x = min(y2, y1);
+    y = max(y2, y1);
+    for (int i = 1; i < 8 - 1; i++) {
+        if (i <= x || i >= y) {
+            c3 = linecheck(map, x1, i, x2, i);
+            if (c3) {
+                c1 = linecheck(map, x1, y1, x1, i);
+                c2 = linecheck(map, x2, y2, x2, i);
+                if (c1 && c2) {
+                    return true;
+                }
+            }
+            else if (i == 1 || i == (8 - 2)) {
+                c1 = linecheck(map, x1, y1, x1, i);
+                c2 = linecheck(map, x2, y2, x2, i);
+                if ((c1 && c2) || (c1 && y2 == i) || (y1 == i && c2)) {
+                    return true;
+                }
+            }
+        }
+    }
+
+
+    for (int i = 1; i < 8 - 1; i++) {
+        if (i <= x || i >= y) {
+            c3 = linecheck(map, i, y1, i, y2);
+            if (c3) {
+                c1 = linecheck(map, x1, y1, i, y1);
+                c2 = linecheck(map, x2, y2, i, y2);
+                if (c1 && c2) {
+                    return true;
+                }
+            }
+            else if (i == 1 || i == (8-2)) {
+                c1 = linecheck(map, x1, y1, i, y1);
+                c2 = linecheck(map, x2, y2, i, y2);
+                if ((c1 && c2) || (c1 && x2 == i) || (x1 == i && c2)) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+bool UcheckHardLevel(pokemon** map, int x1, int y1, int x2, int y2) {
+    if (((x1 == x2) && (x1 == 1 || x1 == 10 - 2) || ((y1 == y2) && (y1 == 1 || y2 == 10-2)))) {
+        return true;
+    }
+    bool c1, c2, c3;
+    int x, y;
+
+    x = min(y2, y1);
+    y = max(y2, y1);
+    for (int i = 1; i < 10 - 1; i++) {
+        if (i <= x || i >= y) {
+            c3 = linecheck(map, x1, i, x2, i);
+            if (c3) {
+                c1 = linecheck(map, x1, y1, x1, i);
+                c2 = linecheck(map, x2, y2, x2, i);
+                if (c1 && c2) {
+                    return true;
+                }
+            }
+            else if (i == 1 || i == (10 - 2)) {
+                c1 = linecheck(map, x1, y1, x1, i);
+                c2 = linecheck(map, x2, y2, x2, i);
+                if ((c1 && c2) || (c1 && y2 == i) || (y1 == i && c2)) {
+                    return true;
+                }
+            }
+        }
+    }
+
+
+    for (int i = 1; i < 10 - 1; i++) {
+        if (i <= x || i >= y) {
+            c3 = linecheck(map, i, y1, i, y2);
+            if (c3) {
+                c1 = linecheck(map, x1, y1, i, y1);
+                c2 = linecheck(map, x2, y2, i, y2);
+                if (c1 && c2) {
+                    return true;
+                }
+            }
+            else if (i == 1 || i == (10-2)) {
+                c1 = linecheck(map, x1, y1, i, y1);
+                c2 = linecheck(map, x2, y2, i, y2);
+                if ((c1 && c2) || (c1 && x2 == i) || (x1 == i && c2)) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+bool allCheckEasy(pokemon** map, int x1, int y1, int x2, int y2) {
+
+    if (Icheck(map, x1, y1, x2, y2)) {
+        return true;
+    }
+    else if (Lcheck(map, x1, y1, x2, y2)) {
+        return true;
+    }
+    else if (Zcheck(map, x1, y1, x2, y2)) {
+        return true;
+    }
+    else if (UcheckEasyLevel(map, x1, y1, x2, y2)) {
+        return true;
+    }
+    return false;
+}
+bool allCheckMedium(pokemon** map, int x1, int y1, int x2, int y2) {
+
+    if (Icheck(map, x1, y1, x2, y2)) {
+        return true;
+    }
+    else if (Lcheck(map, x1, y1, x2, y2)) {
+        return true;
+    }
+    else if (Zcheck(map, x1, y1, x2, y2)) {
+        return true;
+    }
+    else if (UcheckMedLevel(map, x1, y1, x2, y2)) {
+        return true;
+    }
+    return false;
+}
+bool allCheckHard(pokemon** map, int x1, int y1, int x2, int y2) {
+
+    if (Icheck(map, x1, y1, x2, y2)) {
+        return true;
+    }
+    else if (Lcheck(map, x1, y1, x2, y2)) {
+        return true;
+    }
+    else if (Zcheck(map, x1, y1, x2, y2)) {
+        return true;
+    }
+    else if (UcheckHardLevel(map, x1, y1, x2, y2)) {
+        return true;
+    }
+    return false;
+}
+
+bool checkValidPairsEasyLevel(pokemon** map, int height, int width) 
+{	
+	const int heightMed = 6, widthMed = 6;
+    char check = 'A';
+    while (check >= 'A' && check <= 'Z') {
+        int cnt = 0;
+        int* pos = new int[heightMed * widthMed];
+        for (int i = 1; i < heightMed - 1; i++) {
+            for (int j = 1; j < widthMed - 1; j++) {
+                if (map[i][j].chr == check && map[i][j].isValid) {
+                    pos[cnt++] = i;
+                    pos[cnt++] = j;
+                }
+            }
+        }
+        for (int i = 0; i < cnt - 2; i += 2) {
+            for (int j = i + 2; j < cnt; j += 2) {
+                if (allCheckEasy(map, pos[i], pos[i + 1], pos[j], pos[j + 1])) {
+                    delete[] pos;
+                    
+                    return true;
+                }
+            }
+        }
+        check++;
+        delete[] pos;
+    }
+    return false;
+}
+bool checkValidPairsMediumLevel(pokemon** map, int height, int width) 
+{	
+	const int heightMed = 8, widthMed = 8;
+    char check = 'A';
+    while (check >= 'A' && check <= 'Z') {
+        int cnt = 0;
+        int* pos = new int[heightMed * widthMed];
+        for (int i = 1; i < heightMed - 1; i++) {
+            for (int j = 1; j < widthMed - 1; j++) {
+                if (map[i][j].chr == check && map[i][j].isValid) {
+                    pos[cnt++] = i;
+                    pos[cnt++] = j;
+                }
+            }
+        }
+        for (int i = 0; i < cnt - 2; i += 2) {
+            for (int j = i + 2; j < cnt; j += 2) {
+                if (allCheckMedium(map, pos[i], pos[i + 1], pos[j], pos[j + 1])) {
+                    delete[] pos;
+                    return true;
+                }
+            }
+        }
+        check++;
+        delete[] pos;
+    }
+    return false;
+}
+bool checkValidPairsHardLevel(pokemon** map, int height, int width) 
+{	
+	const int heightMed = 10, widthMed = 10;
+    char check = 'A';
+    while (check >= 'A' && check <= 'Z') {
+        int cnt = 0;
+        int* pos = new int[heightMed * widthMed];
+        for (int i = 1; i < heightMed - 1; i++) {
+            for (int j = 1; j < widthMed - 1; j++) {
+                if (map[i][j].chr == check && map[i][j].isValid) {
+                    pos[cnt++] = i;
+                    pos[cnt++] = j;
+                }
+            }
+        }
+        for (int i = 0; i < cnt - 2; i += 2) {
+            for (int j = i + 2; j < cnt; j += 2) {
+                if (allCheckHard(map, pos[i], pos[i + 1], pos[j], pos[j + 1])) {
+                    delete[] pos;
+                    return true;
+                }
+            }
+        }
+        check++;
+        delete[] pos;
+    }
+    return false;
+}
+bool gameOver(pokemon** map, int height, int width)
+{
+    int dem = 0;
+    for (int i = 1; i < height - 1; i++)
+    {
+        for (int j = 1; j < width - 1; j++)
+        {
+            if (map[i][j].isValid == 1)
+                return false;
+        }
+    }
+
+    return true;
+}
+//////////////////////////////////////////////
+void moveSuggestionEasyLevel(pokemon** map, position guidePos[], int height, int width)
+{   
+	const int heightEz = 6; 
+	const int widthEz = 6;
+    for (int i = 1; i < heightEz - 1; i++)
+    {
+        for (int j = 1; j < widthEz - 1; j++)
+        {
+            if (!map[i][j].isValid)
+                continue;
+            
+            for (int k = 1; k < heightEz - 1; k++)
+            {
+                for (int l = 1; l < widthEz - 1; l++)
+                {
+                    if (i == k && l == j)
+                        continue;
+                    if (map[k][l].isValid == false)
+                        continue;
+                    if (map[i][j].chr == map[k][l].chr)
+                    {
+                        if (allCheckEasy(map, i, j, k, l) == true)
+                        {
+                            guidePos[0].x = j;
+                            guidePos[0].y = i;
+                            guidePos[1].x = l;
+                            guidePos[1].y = k;
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+    }
     
-    // Select starting block
-    //selectedBlock();
-
 }
-void showBoardMedium(){
-
-    system("cls");
-	ShowCursor(false);
-	int left = 2, top = 2, size = 6; 
-    gotoxy(left + 1, top);
-    putchar(201);
-    for (int i = 1; i < size * 8; i++)
+void moveSuggestionMediumLevel(pokemon** map, position guidePos[])
+{   
+	const int heightEz = 8; 
+	const int widthEz = 8;
+    for (int i = 1; i < heightEz - 1; i++)
     {
-        Sleep(5);
-        if (i % 8 == 0)
-            putchar(205);
-        else
-            putchar(205);
-    }
-    putchar(187);
-
-    // Draw right line
-    for (int i = 1; i < size * 4; i++)
-    {
-        Sleep(10);
-        gotoxy(size * 8 + left + 1, i + top);
-        if (i % 4 != 0)
-            putchar(186);
-        else
-            putchar(186);
-    }
-    gotoxy(size * 8 + left + 1, size * 4 + top);
-    putchar(188);
-
-    // Draw bottom line
-    for (int i = 1; i < size * 8; i++)
-    {
-        gotoxy(size * 8 + left - i + 1, size * 4 + top);
-        Sleep(5);
-        if (i % 8 == 0)
-            putchar(205);
-        else
-            putchar(205);
-    }
-    gotoxy(left + 1, size * 4 + top);
-    putchar(200);
-
-    // Draw left line
-    for (int i = 1; i < size * 4; i++)
-    {
-        Sleep(10);
-        gotoxy(left + 1, size * 4 + top - i);
-        if (i % 4 != 0)
-            putchar(186);
-        else
-            putchar(186);
-    }
-
-    // Draw vertical lines
-    for (int i = 1; i < size * 4; i++)
-    {
-        for (int j = 8; j < size * 8; j += 8)
+        for (int j = 1; j < widthEz - 1; j++)
         {
-            if (i % 4 != 0)
+            if (!map[i][j].isValid)
+                continue;
+            
+            for (int k = 1; k < heightEz - 1; k++)
             {
-                gotoxy(j + left + 1, i + top);
-                putchar(179);
-            }
-        }
-        Sleep(10);
-    }
-
-    // Draw horizontal lines
-    for (int i = 1; i < size * 8; i++)
-    {
-        for (int j = 4; j < size * 4; j += 4)
-        {
-            gotoxy(i + left + 1, j + top);
-            if (i % 8 == 0)
-                //putchar(197);
-                putchar(32);
-            else
-                putchar(196);
-        }
-        Sleep(5);
-    }
-    // Fill cells with random letters A to D
-	srand(time(NULL)); // Seed the random number generator with current time
-	
-	for (int i = 1; i <= size * 4; i+=4)
-	{
-		for (int j = 8; j <= size * 8; j+=8)
-	    {
-	        char pokemon = 'H' + rand() % 8; // Generate random letter from A to D
-	        gotoxy(left + j - 3, top + i + 1); // Position cursor at center of cell
-	        putchar(pokemon); // Print the random letter
-	        
-	                                  
-	        // Store the polemons in the matrix
-        	pokemons[i-1][(j-8)/8] = pokemon;
-		}
-	}
-}
-void showBoardHard(){
-
-    system("cls");
-	ShowCursor(false);
-	int left = 2, top = 2, size = 8; 
-    gotoxy(left + 1, top);
-    putchar(201);
-    for (int i = 1; i < size * 8; i++)
-    {
-        Sleep(5);
-        if (i % 8 == 0)
-            putchar(205);
-        else
-            putchar(205);
-    }
-    putchar(187);
-
-    // Draw right line
-    for (int i = 1; i < size * 4; i++)
-    {
-        Sleep(10);
-        gotoxy(size * 8 + left + 1, i + top);
-        if (i % 4 != 0)
-            putchar(186);
-        else
-            putchar(186);
-    }
-    gotoxy(size * 8 + left + 1, size * 4 + top);
-    putchar(188);
-
-    // Draw bottom line
-    for (int i = 1; i < size * 8; i++)
-    {
-        gotoxy(size * 8 + left - i + 1, size * 4 + top);
-        Sleep(5);
-        if (i % 8 == 0)
-            putchar(205);
-        else
-            putchar(205);
-    }
-    gotoxy(left + 1, size * 4 + top);
-    putchar(200);
-
-    // Draw left line
-    for (int i = 1; i < size * 4; i++)
-    {
-        Sleep(10);
-        gotoxy(left + 1, size * 4 + top - i);
-        if (i % 4 != 0)
-            putchar(186);
-        else
-            putchar(186);
-    }
-
-    // Draw vertical lines
-    for (int i = 1; i < size * 4; i++)
-    {
-        for (int j = 8; j < size * 8; j += 8)
-        {
-            if (i % 4 != 0)
-            {
-                gotoxy(j + left + 1, i + top);
-                putchar(179);
-            }
-        }
-        Sleep(10);
-    }
-
-    // Draw horizontal lines
-    for (int i = 1; i < size * 8; i++)
-    {
-        for (int j = 4; j < size * 4; j += 4)
-        {
-            gotoxy(i + left + 1, j + top);
-            if (i % 8 == 0)
-                //putchar(197);
-                putchar(32);
-            else
-                putchar(196);
-        }
-        Sleep(5);
-    }
-    // Fill cells with random letters A to D
-	srand(time(NULL)); // Seed the random number generator with current time
-	
-	for (int i = 1; i <= size * 4; i+=4)
-	{
-		for (int j = 8; j <= size * 8; j+=8)
-	    {
-	        char pokemon = 'H' + rand() % 8; // Generate random letter from A to D
-	        gotoxy(left + j - 3, top + i + 1); // Position cursor at center of cell
-	        putchar(pokemon); // Print the random letter
-	        
-	                                  
-	        // Store the polemons in the matrix
-        	pokemons[i-1][(j-8)/8] = pokemon;
-		}
-	}
-}
-//////////////////SELECT BLOCKS - UNSELECT BLOCKS - MOVES/////////////
-
-//
-//
-//void selectedBlock(int x, int y, int color) {
-//	int left = 2, top = 2;
-//    int x = left + col * 8 - 3;
-//    int y = top + row * 4;
-//
-//    // Highlight the selected block
-//    for (int i = y - 1; i <= y + 1; i++) {
-//        for (int j = x - 3; j <= x + 3; j++) {
-//            gotoxy(j, i);
-//            putchar(' ');
-//            setcolor(Green);
-//            putchar(' ');
-//        }
-//    }
-//   setColor(Green);
-//
-//    // Print the pokemon in the selected block
-//    char pokemon = pokemons[row][col];
-//    gotoxy(x, y + 1);
-//    putchar(pokemon);
-//    gotoxy(x, y);
-//}
-//
-//void unselectedBlock(int x, int y) {
-//	int r = getRAt(x, y);
-//	int c = getCAt(x, y);
-//	if(getCheck(x, y) != _DELETE)
-//		pBoard[r][c].setCheck(_NORMAL);
-//
-//	Controller::setConsoleColor(BRIGHT_WHITE, BLACK);
-//	for (int i = y - 1; i <= y + 1; i++) {
-//		for (int j = x - 3; j <= x + 3; j++) {
-//			Controller::gotoXY(j, i);
-//			putchar(32);
-//		}
-//	}
-//	if (getCheck(x, y) != _DELETE) {
-//		Controller::gotoXY(x, y);
-//		putchar(getPokemons(x, y));
-//		Controller::gotoXY(x, y);
-//	}
-//	else {
-//		for (int i = y - 1; i <= y + 1; i++) {
-//			for (int j = x - 3; j <= x + 3; j++) {
-//				Controller::gotoXY(j, i);
-//				//putchar(32);
-//				putchar(background[i - top][j - left]);
-//			}
-//		}
-//	}
-//}
-void highlightBlock(int x, int y) {
-    HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
-
-    // calculate the character cell position
-    COORD position = {(SHORT)x, (SHORT)y};
-
-    // get the current console attributes
-    CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
-    GetConsoleScreenBufferInfo(consoleHandle, &consoleInfo);
-
-    // set the background color to green
-    SetConsoleTextAttribute(consoleHandle, BACKGROUND_GREEN | consoleInfo.wAttributes);
-
-    // write a space character with the new attributes
-    DWORD written;
-    WriteConsoleOutputCharacter(consoleHandle, " ", 1, position, &written);
-
-    // restore the console attributes
-    SetConsoleTextAttribute(consoleHandle, consoleInfo.wAttributes);
-}
-void unhighlightBlock(int x, int y) {
-    HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
-
-    // calculate the character cell position
-    COORD position = {(SHORT)x, (SHORT)y};
-
-    // get the current console attributes
-    CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
-    GetConsoleScreenBufferInfo(consoleHandle, &consoleInfo);
-
-    // reset the background color
-    SetConsoleTextAttribute(consoleHandle, consoleInfo.wAttributes & ~BACKGROUND_GREEN);
-
-    // write a space character with the new attributes
-    DWORD written;
-    WriteConsoleOutputCharacter(consoleHandle, " ", 1, position, &written);
-
-    // restore the console attributes
-    SetConsoleTextAttribute(consoleHandle, consoleInfo.wAttributes);
-}
-void selectedBlock(int x, int y) {
-    int block = (y - 2) / 4 * 4 + (x - 4) / 8;
-    if (selected[block]) {
-        return; // block is already selected, do nothing
-    }
-
-    // highlight selected block
-    highlightBlock(x, y);
-
-    // check if there are already 2 selected blocks
-    int count = 0;
-    for (int i = 0; i < 16; i++) {
-        if (selected[i]) {
-            count++;
-        }
-    }
-
-    if (count == 3) {
-        // unselect first 2 blocks
-        for (int i = 0; i < 16; i++) {
-            if (selected[i]) {
-                selected[i] = false;
-                int bx = i % 4 * 8 + 4;
-                int by = i / 4 * 4 + 2;
-                unhighlightBlock(bx, by);
+                for (int l = 1; l < widthEz - 1; l++)
+                {
+                    if (i == k && l == j)
+                        continue;
+                    if (map[k][l].isValid == false)
+                        continue;
+                    if (map[i][j].chr == map[k][l].chr)
+                    {
+                        if (allCheckMedium(map, i, j, k, l) == true)
+                        {
+                            guidePos[0].x = j;
+                            guidePos[0].y = i;
+                            guidePos[1].x = l;
+                            guidePos[1].y = k;
+                            return;
+                        }
+                    }
+                }
             }
         }
     }
-
-    // set selected block to true
-    selected[block] = true;
-}
-void unselectedBlock(int x, int y) {
-    int block = (y - 2) / 4 * 4 + (x - 4) / 8;
-    if (!selected[block]) {
-        return; // block is not selected, do nothing
-    }
-
-    // unhighlight unselected block
-    unhighlightBlock(x, y);
-
-    // set selected block to false
-    selected[block] = false;
-}
-// Move cursor up one cell
-void moveUp(int &x, int &y) {
-    if (y > 2) {
-        unselectedBlock(x, y);
-        y -= 4;
-        selectedBlock(x, y);
-        gotoxy(x, y);
-    }
-}
-
-// Move cursor down one cell
-void moveDown(int &x, int &y) {
-    if (y < 34) {
-    	unselectedBlock(x, y);
-        y += 4;
-        selectedBlock(x, y);
-        gotoxy(x, y);
-    }
-}
-
-// Move cursor left one cell
-void moveLeft(int &x, int &y) {
-    if (x > 4) {
-        unselectedBlock(x, y);
-        x -= 8;
-        selectedBlock(x, y);
-        gotoxy(x, y);    
-    }
-}
-
-// Move cursor right one cell
-void moveRight(int &x, int &y) {
-    if (x < 62) {
-        unselectedBlock(x, y);
-        x += 8;
-        selectedBlock(x, y);
-        gotoxy(x, y);    
-    }
-}
-
-// Listen for keyboard input and move cursor accordingly
-void moveCursor(int &x, int &y) {
-   ShowCursor(true);
-    gotoxy(x, y);
-
-    while (true) {
-        char c = _getch();
-        if (c == 'w' || c == 72) {
-            moveUp(x, y);
-        } else if (c == 's' || c == 80) {
-            moveDown(x, y);
-        } else if (c == 'a' || c == 75) {
-            moveLeft(x, y);
-        } else if (c == 'd' || c == 77) {
-            moveRight(x, y);
-        }
-    }
-}
-//// Select block at player position and display pokemon letter
-//void Game::selectedBlock()
-//{
-//    if (board->getCheck(_x, _y) != _LOCK) {
-//        board->selectedBlock(_x, _y, GREEN);
-//    }
-//
-//    char pokemon = pokemons[_y/4][_x/8];
-//    gotoxy(_x+2, _y+2);
-//    putchar(pokemon);
-//}
-//
-//// Deselect block at player position and clear display
-
-
-
-
-void Game::printInterface(){
-	
-
-	system("cls");
-	
-//	board->renderBoard();
-//	board->buildBoardData();
-	if(_mode == _EASY){
-	
-        showBoardEasy();
-        
-    }
-    else if(_mode == _MEDIUM){
     
-        showBoardMedium();
-        
+}
+void moveSuggestionHardLevel(pokemon** map, position guidePos[])
+{   
+	const int heightEz = 10; 
+	const int widthEz = 10;
+    for (int i = 1; i < heightEz - 1; i++)
+    {
+        for (int j = 1; j < widthEz - 1; j++)
+        {
+            if (!map[i][j].isValid)
+                continue;
+            
+            for (int k = 1; k < heightEz - 1; k++)
+            {
+                for (int l = 1; l < widthEz - 1; l++)
+                {
+                    if (i == k && l == j)
+                        continue;
+                    if (map[k][l].isValid == false)
+                        continue;
+                    if (map[i][j].chr == map[k][l].chr)
+                    {
+                        if (allCheckMedium(map, i, j, k, l) == true)
+                        {
+                            guidePos[0].x = j;
+                            guidePos[0].y = i;
+                            guidePos[1].x = l;
+                            guidePos[1].y = k;
+                            return;
+                        }
+                    }
+                }
+            }
+        }
     }
-	bool Loop = 1;
-	ShowCursor(false);
-	while(Loop){ 
-		
-//		
-//		
-	    printrectangle(59, 1, 33, 10);
+    
+}
+void Game::moveEasy(pokemon** map, position& pos, int& status, player& p, position selectedPos[], int& couple, int heightEz, int widthEz) {
+    
+	int temp, key;
+    temp = _getch();
+//	const int height = 6;
+//	const int width = 6;
+    if (temp == 77 || temp == 109) 
+    {
+        if (p.hint == 0)
+        {
+            return;
+        }
+
+        position guidePos[2] = {{0,0},{0,0}};
+        moveSuggestionEasyLevel(map, guidePos, 6, 6);
+
+        map[guidePos[0].y][guidePos[0].x].isSelected = 1;
+        map[guidePos[1].y][guidePos[1].x].isSelected = 1;
+
+        map[guidePos[0].y][guidePos[0].x].drawPlayingBox(100);
+        map[guidePos[1].y][guidePos[1].x].drawPlayingBox(100);
+
+        Sleep(500);
+
+        map[guidePos[0].y][guidePos[0].x].isSelected = 0;
+        map[guidePos[1].y][guidePos[1].x].isSelected = 0;
+
+        renderBoardEasy(map, height, width, p);
+
+        p.hint--;
+        p.point -= 2;
+        gotoxy(80, 17);
+        cout << p.point;
+        gotoxy(71, 18);
+        cout << p.hint;
+    }
+    if (temp && temp != 224) 
+    { // neu ko phai la dau mui ten
+        if (temp == ESC_KEY) // neu la ESC
+        {
+            exitscreen();
+        }
+        else if (temp == 'h' || temp == 'H'){
+        	instructionscreen();       	
+		}
+        else if (temp == ENTER_KEY || temp == SPACE_KEY) { // neu la Enter
+            if (pos.x == selectedPos[0].x && pos.y == selectedPos[0].y) {
+                map[selectedPos[0].y][selectedPos[0].x].drawPlayingBox(70);
+                Sleep(500);
+
+                map[selectedPos[0].y][selectedPos[0].x].isSelected = 0;
+                couple = 2;
+                selectedPos[0] = { -1, -1 };
+                p.life--;
+                gotoxy(71, 19);
+                cout << p.life;
+                if(p.life == 0){
+                	printLoseEasy(p);
+				}
+            } // kiem tra lap lai
+            else {
+                selectedPos[2 - couple].x = pos.x;
+                selectedPos[2 - couple].y = pos.y;
+                map[pos.y][pos.x].isSelected = 1;
+                couple--;
+
+                if (couple == 0) { // neu da chon 1 cap
+                    if (map[selectedPos[0].y][selectedPos[0].x].chr == map[selectedPos[1].y][selectedPos[1].x].chr) {  // neu cap nay hop nhau
+                        if (allCheckEasy(map, selectedPos[0].y, selectedPos[0].x, selectedPos[1].y, selectedPos[1].x)) {
+                            PlaySound("music\\ye.wav", NULL, SND_ASYNC);
+							p.point += 3;
+                            gotoxy(80, 17);
+                            cout << "          ";
+                            gotoxy(80, 17);
+                            cout << p.point;
+
+                            map[selectedPos[0].y][selectedPos[0].x].drawPlayingBox(40);
+                            map[selectedPos[1].y][selectedPos[1].x].drawPlayingBox(40);
+                            Sleep(500);
+
+                            map[selectedPos[0].y][selectedPos[0].x].isValid = 0;
+                            map[selectedPos[0].y][selectedPos[0].x].deleteBox();
+                            //if (selectedPos[0].x < 4) displayBackground(bg, selectedPos[0].x, selectedPos[0].y);
+
+                            map[selectedPos[1].y][selectedPos[1].x].isValid = 0;
+                            map[selectedPos[1].y][selectedPos[1].x].deleteBox();
+                            //if (selectedPos[1].x < 4) displayBackground(bg, selectedPos[1].x, selectedPos[1].y);
+                        }
+                        else {
+                            map[selectedPos[0].y][selectedPos[0].x].drawPlayingBox(70);
+                            map[selectedPos[1].y][selectedPos[1].x].drawPlayingBox(70);
+                            Sleep(500);
+							PlaySound("music\\no.wav", NULL, SND_ASYNC);
+                            p.point -= 3;
+                            gotoxy(80, 17);
+                            cout << "          ";
+                            gotoxy(80, 17);
+                            cout << p.point;
+
+                            p.life--;
+                            gotoxy(71, 19);
+                            cout << p.life;
+                            if(p.life == 0){
+			                	printLoseEasy(p);
+							}
+                        }
+                    }
+                    else {
+                        map[selectedPos[0].y][selectedPos[0].x].drawPlayingBox(70);
+                        map[selectedPos[1].y][selectedPos[1].x].drawPlayingBox(70);
+                        Sleep(500);
+                        PlaySound("music\\no.wav", NULL, SND_ASYNC);
+                        p.point -= 3;
+                        gotoxy(80, 17);
+                        cout << "          ";
+                        gotoxy(80, 17);
+                        cout << p.point;
+
+                        p.life--;
+                        gotoxy(71, 19);
+                        cout << p.life;
+                        if(p.life == 0){
+			               	printLoseEasy(p);
+						}
+                    }
+                    // tra ve noi san xuat
+                    map[selectedPos[0].y][selectedPos[0].x].isSelected = 0;
+                    map[selectedPos[1].y][selectedPos[1].x].isSelected = 0;
+                    couple = 2;
+                    selectedPos[0] = { -1, -1 };
+                    selectedPos[1] = { -1, -1 };
+
+                    for (int i = pos.y; i < heightEz - 1; i++) {
+                        for (int j = pos.x; j < widthEz - 1; j++) {
+                            if (map[i][j].isValid) {
+                                pos.x = j;
+                                pos.y = i;
+                                return;
+                            }
+                        }
+                    }
+
+                    for (int i = 1; i <= pos.y; i++) { // chuyen den CELL_1 o tren
+                        for (int j = 1; j <= pos.x; j++) {
+                            if (map[i][j].isValid) {
+                                pos.x = j;
+                                pos.y = i;
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    else //neu la dau mui ten
+    {
+        if ((pos.y != selectedPos[0].y || pos.x != selectedPos[0].x) && (pos.y != selectedPos[1].y || pos.x != selectedPos[1].x)) // ktra xem o nay co dang duoc chon hay khong
+            map[pos.y][pos.x].isSelected = 0;
+        switch (key = _getch())
+        {
+        case KEY_UP:
+            for (int i = pos.x; i < widthEz - 1; i++) {
+                for (int j = pos.y - 1; j > 0; j--) {
+                    if (map[j][i].isValid) {
+                        pos.x = i;
+                        pos.y = j;
+                        PlaySound("music\\click.wav", NULL, SND_ASYNC);
+                        return;
+                    }
+                }
+            }
+
+            for (int i = pos.x - 1; i > 0; i--) {
+                for (int j = pos.y - 1; j > 0; j--) {
+                    if (map[j][i].isValid) {
+                        pos.x = i;
+                        pos.y = j;
+                        PlaySound("music\\click.wav", NULL, SND_ASYNC);
+                        return;
+                    }
+                }
+            }
+
+            for (int i = pos.x; i < widthEz - 1; i++) {
+                for (int j = heightEz - 1; j > pos.y; j--) {
+                    if (map[j][i].isValid) {
+                        pos.x = i;
+                        pos.y = j;
+                        PlaySound("music\\click.wav", NULL, SND_ASYNC);
+                        return;
+                    }
+                }
+            }
+
+            for (int i = pos.x; i > 0; i--) {
+                for (int j = heightEz - 1; j > pos.y; j--) {
+                    if (map[j][i].isValid) {
+                        pos.x = i;
+                        pos.y = j;
+                        PlaySound("music\\click.wav", NULL, SND_ASYNC);
+                        return;
+                    }
+                }
+            }
+
+            break;
+        case KEY_DOWN:
+            for (int i = pos.x; i < widthEz - 1; i++) {
+                for (int j = pos.y + 1; j < heightEz - 1; j++) {
+                    if (map[j][i].isValid) {
+                        pos.x = i;
+                        pos.y = j;
+                        PlaySound("music\\click.wav", NULL, SND_ASYNC);
+                        return;
+                    }
+                }
+            }
+
+            for (int i = pos.x - 1; i > 0; i--) {
+                for (int j = pos.y + 1; j < heightEz - 1; j++) {
+                    if (map[j][i].isValid) {
+                        pos.x = i;
+                        pos.y = j;
+                        PlaySound("music\\click.wav", NULL, SND_ASYNC);
+                        return;
+                    }
+                }
+            }
+
+            for (int i = pos.x; i < widthEz - 1; i++) {
+                for (int j = 1; j < pos.y; j++) {
+                    if (map[j][i].isValid) {
+                        pos.x = i;
+                        pos.y = j;
+                        PlaySound("music\\click.wav", NULL, SND_ASYNC);
+                        return;
+                    }
+                }
+            }
+
+            for (int i = pos.x - 1; i > 0; i--) {
+                for (int j = 1; j < pos.y; j++) {
+                    if (map[j][i].isValid) {
+                        pos.x = i;
+                        pos.y = j;
+                        PlaySound("music\\click.wav", NULL, SND_ASYNC);
+                        return;
+                    }
+                }
+            }
+            break;
+        case KEY_LEFT:
+            for (int i = pos.y; i > 0; i--) {
+                for (int j = pos.x - 1; j > 0; j--) {
+                    if (map[i][j].isValid) {
+                        pos.x = j;
+                        pos.y = i;
+                        PlaySound("music\\click.wav", NULL, SND_ASYNC);
+                        return;
+                    }
+                }
+            }
+
+            for (int i = pos.y + 1; i < heightEz - 1; i++) {
+                for (int j = pos.x - 1; j > 0; j--) {
+                    if (map[i][j].isValid) {
+                        pos.x = j;
+                        pos.y = i;
+                        PlaySound("music\\click.wav", NULL, SND_ASYNC);
+                        return;
+                    }
+                }
+            }
+
+            for (int i = pos.y; i > 0; i--) {
+                for (int j = widthEz - 1; j > pos.x; j--) {
+                    if (map[i][j].isValid) {
+                        pos.x = j;
+                        pos.y = i;
+                        PlaySound("music\\click.wav", NULL, SND_ASYNC);
+                        return;
+                    }
+                }
+            }
+
+            for (int i = pos.y + 1; i < heightEz - 1; i++) {
+                for (int j = widthEz - 2; j > pos.x; j--) {
+                    if (map[i][j].isValid) {
+                        pos.x = j;
+                        pos.y = i;
+                        PlaySound("music\\click.wav", NULL, SND_ASYNC);
+                        return;
+                    }
+                }
+            }
+            break;
+        case KEY_RIGHT:
+            for (int i = pos.y; i > 0; i--) {
+                for (int j = pos.x + 1; j < widthEz - 1; j++) {
+                    if (map[i][j].isValid) {
+                        pos.x = j;
+                        pos.y = i;
+                        PlaySound("music\\click.wav", NULL, SND_ASYNC);
+                        return;
+                    }
+                }
+            }
+
+            for (int i = pos.y + 1; i < heightEz - 1; i++) {
+                for (int j = pos.x + 1; j < widthEz - 1; j++) {
+                    if (map[i][j].isValid) {
+                        pos.x = j;
+                        pos.y = i;
+                        PlaySound("music\\click.wav", NULL, SND_ASYNC);
+                        return;
+                    }
+                }
+            }
+
+            for (int i = pos.y; i > 0; i--) {
+                for (int j = 1; j < pos.x; j++) {
+                    if (map[i][j].isValid) {
+                        pos.x = j;
+                        pos.y = i;
+                        PlaySound("music\\click.wav", NULL, SND_ASYNC);
+                        return;
+                    }
+                }
+            }
+
+            for (int i = pos.y + 1; i < heightEz - 1; i++) {
+                for (int j = 1; j < pos.x; j++) {
+                    if (map[i][j].isValid) {
+                        pos.x = j;
+                        pos.y = i;
+                        PlaySound("music\\click.wav", NULL, SND_ASYNC);
+                        return;
+                    }
+                }
+            }
+         
+        default:
+            break;
+        }
+    }
+    
+}
+void Game::moveMedium(pokemon** map, position& pos, int& status, player& p, position selectedPos[], int& couple) {
+    
+	int temp, key;
+    temp = _getch();
+	const int height = 8;
+	const int width = 8;
+    if (temp == 77 || temp == 109) 
+    {
+        if (p.hint == 0)
+        {
+            return;
+        }
+
+        position guidePos[2] = {{0,0},{0,0}};
+        moveSuggestionMediumLevel(map, guidePos);
+
+        map[guidePos[0].y][guidePos[0].x].isSelected = 1;
+        map[guidePos[1].y][guidePos[1].x].isSelected = 1;
+
+        map[guidePos[0].y][guidePos[0].x].drawPlayingBox(100);
+        map[guidePos[1].y][guidePos[1].x].drawPlayingBox(100);
+
+        Sleep(500);
+
+        map[guidePos[0].y][guidePos[0].x].isSelected = 0;
+        map[guidePos[1].y][guidePos[1].x].isSelected = 0;
+
+        renderBoardMedium(map, height, width, p);
+
+        p.hint--;
+        p.point -= 2;
+        gotoxy(96, 17);
+        cout << p.point;
+        gotoxy(87, 18);
+        cout << p.hint;
+        //gotoxy(100, 1);
+        //cout << "suggest y1: " << guidePos[1].y;
+        //gotoxy(100, 2);
+        //cout << "suggest x1: " << guidePos[1].x;
+        //gotoxy(100, 3);
+        //cout << "suggest y2: " << guidePos[0].y;
+        //gotoxy(100, 4);
+        //cout << "suggest x2: " << guidePos[0].x;
+    }
+    if (temp && temp != 224) 
+    { // neu ko phai la dau mui ten
+        if (temp == ESC_KEY) // neu la ESC
+        {
+            exitscreen();
+        }
+        else if (temp == 'h' || temp == 'H'){
+         instructionscreen();       	
+		}
+        else if (temp == ENTER_KEY || temp == SPACE_KEY) { // neu la Enter
+            if (pos.x == selectedPos[0].x && pos.y == selectedPos[0].y) {
+                map[selectedPos[0].y][selectedPos[0].x].drawPlayingBox(70);
+                Sleep(500);
+
+                map[selectedPos[0].y][selectedPos[0].x].isSelected = 0;
+                couple = 2;
+                selectedPos[0] = { -1, -1 };
+                p.life--;
+                gotoxy(87, 19);
+                cout << p.life;
+                if(p.life == 0){
+                	printLoseMedium(p);
+				}
+            } // kiem tra lap lai
+            else {
+                selectedPos[2 - couple].x = pos.x;
+                selectedPos[2 - couple].y = pos.y;
+                map[pos.y][pos.x].isSelected = 1;
+                couple--;
+
+                if (couple == 0) { // neu da chon 1 cap
+                    if (map[selectedPos[0].y][selectedPos[0].x].chr == map[selectedPos[1].y][selectedPos[1].x].chr) {  // neu cap nay hop nhau
+                        if (allCheckMedium(map, selectedPos[0].y, selectedPos[0].x, selectedPos[1].y, selectedPos[1].x)) {
+                            PlaySound("music\\ye.wav", NULL, SND_ASYNC);
+							p.point += 3;
+                            gotoxy(96, 17);
+                            cout << "          ";
+                            gotoxy(96, 17);
+                            cout << p.point;
+
+                            map[selectedPos[0].y][selectedPos[0].x].drawPlayingBox(40);
+                            map[selectedPos[1].y][selectedPos[1].x].drawPlayingBox(40);
+                            Sleep(500);
+
+                            map[selectedPos[0].y][selectedPos[0].x].isValid = 0;
+                            map[selectedPos[0].y][selectedPos[0].x].deleteBox();
+                            //if (selectedPos[0].x < 4) displayBackground(bg, selectedPos[0].x, selectedPos[0].y);
+
+                            map[selectedPos[1].y][selectedPos[1].x].isValid = 0;
+                            map[selectedPos[1].y][selectedPos[1].x].deleteBox();
+                            //if (selectedPos[1].x < 4) displayBackground(bg, selectedPos[1].x, selectedPos[1].y);
+                        }
+                        else {
+                            map[selectedPos[0].y][selectedPos[0].x].drawPlayingBox(70);
+                            map[selectedPos[1].y][selectedPos[1].x].drawPlayingBox(70);
+                            Sleep(500);
+							PlaySound("music\\no.wav", NULL, SND_ASYNC);
+                            p.point -= 3;
+                            gotoxy(96, 17);
+                            cout << "          ";
+                            gotoxy(96, 17);
+                            cout << p.point;
+
+                            p.life--;
+                            gotoxy(87, 19);
+                            cout << p.life;
+                            if(p.life == 0){
+			                	printLoseMedium(p);
+			                	
+							}
+                        }
+                    }
+                    else {
+                        map[selectedPos[0].y][selectedPos[0].x].drawPlayingBox(70);
+                        map[selectedPos[1].y][selectedPos[1].x].drawPlayingBox(70);
+                        Sleep(500);
+                        PlaySound("music\\no.wav", NULL, SND_ASYNC);
+                        p.point -= 3;
+                        gotoxy(96, 17);
+                        cout << "          ";
+                        gotoxy(96, 17);
+                        cout << p.point;
+
+                        p.life--;
+                        gotoxy(87, 19);
+                        cout << p.life;
+                        if(p.life == 0){
+		                	printLoseMedium(p);
+		                	
+						}
+                    }
+                    // tra ve noi san xuat
+                    map[selectedPos[0].y][selectedPos[0].x].isSelected = 0;
+                    map[selectedPos[1].y][selectedPos[1].x].isSelected = 0;
+                    couple = 2;
+                    selectedPos[0] = { -1, -1 };
+                    selectedPos[1] = { -1, -1 };
+
+                    for (int i = pos.y; i < height - 1; i++) {
+                        for (int j = pos.x; j < width - 1; j++) {
+                            if (map[i][j].isValid) {
+                                pos.x = j;
+                                pos.y = i;
+                                return;
+                            }
+                        }
+                    }
+
+                    for (int i = 1; i <= pos.y; i++) { // chuyen den CELL_1 o tren
+                        for (int j = 1; j <= pos.x; j++) {
+                            if (map[i][j].isValid) {
+                                pos.x = j;
+                                pos.y = i;
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    else //neu la dau mui ten
+    {
+        if ((pos.y != selectedPos[0].y || pos.x != selectedPos[0].x) && (pos.y != selectedPos[1].y || pos.x != selectedPos[1].x)) // ktra xem o nay co dang duoc chon hay khong
+            map[pos.y][pos.x].isSelected = 0;
+        switch (key = _getch())
+        {
+        case KEY_UP:
+            for (int i = pos.x; i < width - 1; i++) {
+                for (int j = pos.y - 1; j > 0; j--) {
+                    if (map[j][i].isValid) {
+                        pos.x = i;
+                        pos.y = j;
+                        PlaySound("music\\pew.wav", NULL, SND_ASYNC);
+                        return;
+                    }
+                }
+            }
+
+            for (int i = pos.x - 1; i > 0; i--) {
+                for (int j = pos.y - 1; j > 0; j--) {
+                    if (map[j][i].isValid) {
+                        pos.x = i;
+                        pos.y = j;
+                        PlaySound("music\\pew.wav", NULL, SND_ASYNC);
+                        return;
+                    }
+                }
+            }
+
+            for (int i = pos.x; i < width - 1; i++) {
+                for (int j = height - 1; j > pos.y; j--) {
+                    if (map[j][i].isValid) {
+                        pos.x = i;
+                        pos.y = j;
+                        PlaySound("music\\pew.wav", NULL, SND_ASYNC);
+                        return;
+                    }
+                }
+            }
+
+            for (int i = pos.x; i > 0; i--) {
+                for (int j = height - 1; j > pos.y; j--) {
+                    if (map[j][i].isValid) {
+                        pos.x = i;
+                        pos.y = j;
+                        PlaySound("music\\pew.wav", NULL, SND_ASYNC);
+                        return;
+                    }
+                }
+            }
+
+            break;
+        case KEY_DOWN:
+            for (int i = pos.x; i < width - 1; i++) {
+                for (int j = pos.y + 1; j < height - 1; j++) {
+                    if (map[j][i].isValid) {
+                        pos.x = i;
+                        pos.y = j;
+                        PlaySound("music\\pew.wav", NULL, SND_ASYNC);
+                        return;
+                    }
+                }
+            }
+
+            for (int i = pos.x - 1; i > 0; i--) {
+                for (int j = pos.y + 1; j < height - 1; j++) {
+                    if (map[j][i].isValid) {
+                        pos.x = i;
+                        pos.y = j;
+                        PlaySound("music\\pew.wav", NULL, SND_ASYNC);
+                        return;
+                    }
+                }
+            }
+
+            for (int i = pos.x; i < width - 1; i++) {
+                for (int j = 1; j < pos.y; j++) {
+                    if (map[j][i].isValid) {
+                        pos.x = i;
+                        pos.y = j;
+                        PlaySound("music\\pew.wav", NULL, SND_ASYNC);
+                        return;
+                    }
+                }
+            }
+
+            for (int i = pos.x - 1; i > 0; i--) {
+                for (int j = 1; j < pos.y; j++) {
+                    if (map[j][i].isValid) {
+                        pos.x = i;
+                        pos.y = j;
+                        PlaySound("music\\pew.wav", NULL, SND_ASYNC);
+                        return;
+                    }
+                }
+            }
+            break;
+        case KEY_LEFT:
+            for (int i = pos.y; i > 0; i--) {
+                for (int j = pos.x - 1; j > 0; j--) {
+                    if (map[i][j].isValid) {
+                        pos.x = j;
+                        pos.y = i;
+                        PlaySound("music\\pew.wav", NULL, SND_ASYNC);
+                        return;
+                    }
+                }
+            }
+
+            for (int i = pos.y + 1; i < height - 1; i++) {
+                for (int j = pos.x - 1; j > 0; j--) {
+                    if (map[i][j].isValid) {
+                        pos.x = j;
+                        pos.y = i;
+                        PlaySound("music\\pew.wav", NULL, SND_ASYNC);
+                        return;
+                    }
+                }
+            }
+
+            for (int i = pos.y; i > 0; i--) {
+                for (int j = width - 1; j > pos.x; j--) {
+                    if (map[i][j].isValid) {
+                        pos.x = j;
+                        pos.y = i;
+                        PlaySound("music\\pew.wav", NULL, SND_ASYNC);
+                        return;
+                    }
+                }
+            }
+
+            for (int i = pos.y + 1; i < height - 1; i++) {
+                for (int j = width - 2; j > pos.x; j--) {
+                    if (map[i][j].isValid) {
+                        pos.x = j;
+                        pos.y = i;
+                        PlaySound("music\\pew.wav", NULL, SND_ASYNC);
+                        return;
+                    }
+                }
+            }
+            break;
+        case KEY_RIGHT:
+            for (int i = pos.y; i > 0; i--) {
+                for (int j = pos.x + 1; j < width - 1; j++) {
+                    if (map[i][j].isValid) {
+                        pos.x = j;
+                        pos.y = i;
+                        PlaySound("music\\pew.wav", NULL, SND_ASYNC);
+                        return;
+                    }
+                }
+            }
+
+            for (int i = pos.y + 1; i < height - 1; i++) {
+                for (int j = pos.x + 1; j < width - 1; j++) {
+                    if (map[i][j].isValid) {
+                        pos.x = j;
+                        pos.y = i;
+                        PlaySound("music\\pew.wav", NULL, SND_ASYNC);
+                        return;
+                    }
+                }
+            }
+
+            for (int i = pos.y; i > 0; i--) {
+                for (int j = 1; j < pos.x; j++) {
+                    if (map[i][j].isValid) {
+                        pos.x = j;
+                        pos.y = i;
+                        PlaySound("music\\pew.wav", NULL, SND_ASYNC);
+                        return;
+                    }
+                }
+            }
+
+            for (int i = pos.y + 1; i < height - 1; i++) {
+                for (int j = 1; j < pos.x; j++) {
+                    if (map[i][j].isValid) {
+                        pos.x = j;
+                        pos.y = i;
+                        PlaySound("music\\pew.wav", NULL, SND_ASYNC);
+                        return;
+                    }
+                }
+            }
+         
+        default:
+            break;
+        }
+    }
+}
+void Game::moveHard(pokemon** map, position& pos, int& status, player& p, position selectedPos[], int& couple) {
+    
+	int temp, key;
+    temp = _getch();
+	const int height = 10;
+	const int width = 10;
+    if (temp == 77 || temp == 109) 
+    {
+        if (p.hint == 0)
+        {
+            return;
+        }
+
+        position guidePos[2] = {{0,0},{0,0}};
+        moveSuggestionHardLevel(map, guidePos);
+
+        map[guidePos[0].y][guidePos[0].x].isSelected = 1;
+        map[guidePos[1].y][guidePos[1].x].isSelected = 1;
+
+        map[guidePos[0].y][guidePos[0].x].drawPlayingBox(100);
+        map[guidePos[1].y][guidePos[1].x].drawPlayingBox(100);
+
+        Sleep(500);
+
+        map[guidePos[0].y][guidePos[0].x].isSelected = 0;
+        map[guidePos[1].y][guidePos[1].x].isSelected = 0;
+
+        renderBoardHard(map, height, width, p);
+
+        p.hint--;
+        p.point -= 2;
+        gotoxy(123, 19);
+        cout << p.point;
+        gotoxy(114, 20);
+        cout << p.hint;
+        //gotoxy(100, 1);
+        //cout << "suggest y1: " << guidePos[1].y;
+        //gotoxy(100, 2);
+        //cout << "suggest x1: " << guidePos[1].x;
+        //gotoxy(100, 3);
+        //cout << "suggest y2: " << guidePos[0].y;
+        //gotoxy(100, 4);
+        //cout << "suggest x2: " << guidePos[0].x;
+    }
+    if (temp && temp != 224) 
+    { // neu ko phai la dau mui ten
+        if (temp == ESC_KEY) // neu la ESC
+        {
+            exitscreen();
+        }
+        else if (temp == 'h' || temp == 'H'){
+         instructionscreen();       	
+		}
+        else if (temp == ENTER_KEY || temp == SPACE_KEY) { // neu la Enter
+            if (pos.x == selectedPos[0].x && pos.y == selectedPos[0].y) {
+                map[selectedPos[0].y][selectedPos[0].x].drawPlayingBox(70);
+                Sleep(500);
+
+                map[selectedPos[0].y][selectedPos[0].x].isSelected = 0;
+                couple = 2;
+                selectedPos[0] = { -1, -1 };
+                p.life--;
+                gotoxy(114, 21);
+                cout << p.life;
+                if(p.life == 0){
+                	printLoseHard(p);
+				}
+            } // kiem tra lap lai
+            else {
+                selectedPos[2 - couple].x = pos.x;
+                selectedPos[2 - couple].y = pos.y;
+                map[pos.y][pos.x].isSelected = 1;
+                couple--;
+
+                if (couple == 0) { // neu da chon 1 cap
+                    if (map[selectedPos[0].y][selectedPos[0].x].chr == map[selectedPos[1].y][selectedPos[1].x].chr) {  // neu cap nay hop nhau
+                        if (allCheckMedium(map, selectedPos[0].y, selectedPos[0].x, selectedPos[1].y, selectedPos[1].x)) {
+                        	PlaySound("music\\ye.wav", NULL, SND_ASYNC);
+                            p.point += 3;
+                            gotoxy(123, 0);
+                            cout << "          ";
+                            gotoxy(123, 19);
+                            cout << p.point;
+                            
+
+                            map[selectedPos[0].y][selectedPos[0].x].drawPlayingBox(40);
+                            map[selectedPos[1].y][selectedPos[1].x].drawPlayingBox(40);
+                            Sleep(500);
+
+                            map[selectedPos[0].y][selectedPos[0].x].isValid = 0;
+                            map[selectedPos[0].y][selectedPos[0].x].deleteBox();
+                            //if (selectedPos[0].x < 4) displayBackground(bg, selectedPos[0].x, selectedPos[0].y);
+
+                            map[selectedPos[1].y][selectedPos[1].x].isValid = 0;
+                            map[selectedPos[1].y][selectedPos[1].x].deleteBox();
+                            //if (selectedPos[1].x < 4) displayBackground(bg, selectedPos[1].x, selectedPos[1].y);
+                        }
+                        else {
+                            map[selectedPos[0].y][selectedPos[0].x].drawPlayingBox(70);
+                            map[selectedPos[1].y][selectedPos[1].x].drawPlayingBox(70);
+                            Sleep(500);
+							PlaySound("music\\no.wav", NULL, SND_ASYNC);
+                            p.point -= 3;
+                            gotoxy(123, 0);
+                            cout << "          ";
+                            gotoxy(123, 19);
+                            cout << p.point;
+
+                            p.life--;
+                            gotoxy(114, 21);
+                            cout << p.life;
+                            if(p.life == 0){
+			                	printLoseHard(p);
+							}
+                        }
+                    }
+                    else {
+                        map[selectedPos[0].y][selectedPos[0].x].drawPlayingBox(70);
+                        map[selectedPos[1].y][selectedPos[1].x].drawPlayingBox(70);
+                        Sleep(500);
+                        PlaySound("music\\no.wav", NULL, SND_ASYNC);
+                        p.point -= 3;
+                        gotoxy(123, 0);
+                        cout << "          ";
+                        gotoxy(123, 19);
+                        cout << p.point;
+
+                        p.life--;
+                        gotoxy(114, 21);
+                        cout << p.life;
+                        if(p.life == 0){
+		                	printLoseHard(p);
+						}
+                    }
+                    // tra ve noi san xuat
+                    map[selectedPos[0].y][selectedPos[0].x].isSelected = 0;
+                    map[selectedPos[1].y][selectedPos[1].x].isSelected = 0;
+                    couple = 2;
+                    selectedPos[0] = { -1, -1 };
+                    selectedPos[1] = { -1, -1 };
+
+                    for (int i = pos.y; i < height - 1; i++) {
+                        for (int j = pos.x; j < width - 1; j++) {
+                            if (map[i][j].isValid) {
+                                pos.x = j;
+                                pos.y = i;
+                                return;
+                            }
+                        }
+                    }
+
+                    for (int i = 1; i <= pos.y; i++) { // chuyen den CELL_1 o tren
+                        for (int j = 1; j <= pos.x; j++) {
+                            if (map[i][j].isValid) {
+                                pos.x = j;
+                                pos.y = i;
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    else //neu la dau mui ten
+    {
+        if ((pos.y != selectedPos[0].y || pos.x != selectedPos[0].x) && (pos.y != selectedPos[1].y || pos.x != selectedPos[1].x)) // ktra xem o nay co dang duoc chon hay khong
+            map[pos.y][pos.x].isSelected = 0;
+        switch (key = _getch())
+        {
+        case KEY_UP:
+            for (int i = pos.x; i < width - 1; i++) {
+                for (int j = pos.y - 1; j > 0; j--) {
+                    if (map[j][i].isValid) {
+                        pos.x = i;
+                        pos.y = j;
+                        PlaySound("music\\ha.wav", NULL, SND_ASYNC);
+                        return;
+                    }
+                }
+            }
+
+            for (int i = pos.x - 1; i > 0; i--) {
+                for (int j = pos.y - 1; j > 0; j--) {
+                    if (map[j][i].isValid) {
+                        pos.x = i;
+                        pos.y = j;
+                        PlaySound("music\\ha.wav", NULL, SND_ASYNC);
+                        return;
+                    }
+                }
+            }
+
+            for (int i = pos.x; i < width - 1; i++) {
+                for (int j = height - 1; j > pos.y; j--) {
+                    if (map[j][i].isValid) {
+                        pos.x = i;
+                        pos.y = j;
+                        PlaySound("music\\ha.wav", NULL, SND_ASYNC);
+                        return;
+                    }
+                }
+            }
+
+            for (int i = pos.x; i > 0; i--) {
+                for (int j = height - 1; j > pos.y; j--) {
+                    if (map[j][i].isValid) {
+                        pos.x = i;
+                        pos.y = j;
+                        PlaySound("music\\ha.wav", NULL, SND_ASYNC);
+                        return;
+                    }
+                }
+            }
+
+            break;
+        case KEY_DOWN:
+            for (int i = pos.x; i < width - 1; i++) {
+                for (int j = pos.y + 1; j < height - 1; j++) {
+                    if (map[j][i].isValid) {
+                        pos.x = i;
+                        pos.y = j;
+                        PlaySound("music\\ha.wav", NULL, SND_ASYNC);
+                        return;
+                    }
+                }
+            }
+
+            for (int i = pos.x - 1; i > 0; i--) {
+                for (int j = pos.y + 1; j < height - 1; j++) {
+                    if (map[j][i].isValid) {
+                        pos.x = i;
+                        pos.y = j;
+                        PlaySound("music\\ha.wav", NULL, SND_ASYNC);
+                        return;
+                    }
+                }
+            }
+
+            for (int i = pos.x; i < width - 1; i++) {
+                for (int j = 1; j < pos.y; j++) {
+                    if (map[j][i].isValid) {
+                        pos.x = i;
+                        pos.y = j;
+                        PlaySound("music\\ha.wav", NULL, SND_ASYNC);
+                        return;
+                    }
+                }
+            }
+
+            for (int i = pos.x - 1; i > 0; i--) {
+                for (int j = 1; j < pos.y; j++) {
+                    if (map[j][i].isValid) {
+                        pos.x = i;
+                        pos.y = j;
+                        PlaySound("music\\ha.wav", NULL, SND_ASYNC);
+                        return;
+                    }
+                }
+            }
+            break;
+        case KEY_LEFT:
+            for (int i = pos.y; i > 0; i--) {
+                for (int j = pos.x - 1; j > 0; j--) {
+                    if (map[i][j].isValid) {
+                        pos.x = j;
+                        pos.y = i;
+                        PlaySound("music\\ha.wav", NULL, SND_ASYNC);
+                        return;
+                    }
+                }
+            }
+
+            for (int i = pos.y + 1; i < height - 1; i++) {
+                for (int j = pos.x - 1; j > 0; j--) {
+                    if (map[i][j].isValid) {
+                        pos.x = j;
+                        pos.y = i;
+                        PlaySound("music\\ha.wav", NULL, SND_ASYNC);
+                        return;
+                    }
+                }
+            }
+
+            for (int i = pos.y; i > 0; i--) {
+                for (int j = width - 1; j > pos.x; j--) {
+                    if (map[i][j].isValid) {
+                        pos.x = j;
+                        pos.y = i;
+                        PlaySound("music\\ha.wav", NULL, SND_ASYNC);
+                        return;
+                    }
+                }
+            }
+
+            for (int i = pos.y + 1; i < height - 1; i++) {
+                for (int j = width - 2; j > pos.x; j--) {
+                    if (map[i][j].isValid) {
+                        pos.x = j;
+                        pos.y = i;
+                        PlaySound("music\\ha.wav", NULL, SND_ASYNC);
+                        return;
+                    }
+                }
+            }
+            break;
+        case KEY_RIGHT:
+            for (int i = pos.y; i > 0; i--) {
+                for (int j = pos.x + 1; j < width - 1; j++) {
+                    if (map[i][j].isValid) {
+                        pos.x = j;
+                        pos.y = i;
+                        PlaySound("music\\ha.wav", NULL, SND_ASYNC);
+                        return;
+                    }
+                }
+            }
+
+            for (int i = pos.y + 1; i < height - 1; i++) {
+                for (int j = pos.x + 1; j < width - 1; j++) {
+                    if (map[i][j].isValid) {
+                        pos.x = j;
+                        pos.y = i;
+                        PlaySound("music\\ha.wav", NULL, SND_ASYNC);
+                        return;
+                    }
+                }
+            }
+
+            for (int i = pos.y; i > 0; i--) {
+                for (int j = 1; j < pos.x; j++) {
+                    if (map[i][j].isValid) {
+                        pos.x = j;
+                        pos.y = i;
+                        PlaySound("music\\ha.wav", NULL, SND_ASYNC);
+                        return;
+                    }
+                }
+            }
+
+            for (int i = pos.y + 1; i < height - 1; i++) {
+                for (int j = 1; j < pos.x; j++) {
+                    if (map[i][j].isValid) {
+                        pos.x = j;
+                        pos.y = i;
+                        PlaySound("music\\ha.wav", NULL, SND_ASYNC);
+                        return;
+                    }
+                }
+            }
+         
+        default:
+            break;
+        }
+    }
+}
+//char box[5][12] = {
+//            {" --------- "},
+//            {"|         |"},
+//            {"|         |"},
+//            {"|         |"},
+//            {" --------- "}
+//};
+char box[5][12] = {
+    {char(218), char(196), char(196), char(196),char(196), char(196), char(196), char(196), char(196), char(196), char(191)},
+    {char(179), char(32), char(32), char(32), char(32), char(32), char(32), char(32), char(32), char(32), char(179)},
+    {char(179), char(32), char(32), char(32), char(32), char(32), char(32), char(32), char(32), char(32), char(179)},
+    {char(179), char(32), char(32), char(32), char(32), char(32), char(32), char(32), char(32), char(32), char(179)},
+    {char(192), char(196), char(196), char(196), char(196), char(196), char(196), char(196), char(196), char(196), char(217)}
+};
+
+
+/////////////////GENERATE MAP///////////////////////////////////
+void Game::generateMapEasy(pokemon **&map)
+{   
+    srand((unsigned int)time(NULL));
+	const int mapEzHeight = 6; // set map height to 6
+    const int mapEzWidth = 6; 
+//    map = new pokemon* [mapHeight];
+
+    //Creating a 2D for game array
+    for (int i = 0; i < mapEzHeight; i++)
+    {
+        map[i] = new pokemon [mapEzWidth];
+    }
+
+    int timesRandom = 2;
+
+    for (int i = 0; i < mapEzHeight; i++)
+    {
+        for (int j = 0; j < mapEzWidth; j++)
+        {
+            if (i == 0 || i == mapEzHeight - 1 || j == 0 || j == mapEzWidth - 1)
+                map[i][j].isValid = 1;
+        }
+    }
+
+    for (int i = 1; i < mapEzHeight - 1; i++)
+    {
+        for (int j = 1; j < mapEzWidth - 1; j++)
+        {
+            map[i][j].x = j;
+            map[i][j].y = i;
+        }
+    }
+
+
+    int totalCell = ((mapEzWidth - 2) * (mapEzHeight - 2)) / 2;
+
+    while (totalCell > 0)
+    {
+        char randomCharacter = 65 + rand() % 26;
+        while (timesRandom > 0)
+        {
+            int index = rand() % (mapEzWidth * mapEzHeight);
+            if (map[index / mapEzWidth][index % mapEzWidth].chr == ' ')
+            {
+                if (index / mapEzWidth != 0 && index / mapEzWidth != (mapEzHeight - 1) && index % mapEzWidth != 0 && index % mapEzWidth != (mapEzWidth - 1))
+                {
+                    map[index / mapEzWidth][index % mapEzWidth].chr = randomCharacter;
+                    timesRandom--;
+                }
+            }
+        }
+        timesRandom = 2;
+        totalCell--;
+    }
+//    printInterface();
+
+			
+
+}
+void Game::generateMapMedium(pokemon **&map)
+{   
+    srand((unsigned int)time(NULL));
+    const int mapMedHeight = 8; // set map height to 6
+    const int mapMedWidth = 8; // set map width to 6
+//    map = new pokemon* [mapMedHeight];
+
+    //Creating a 2D for game array
+    for (int i = 0; i < mapMedHeight; i++)
+    {
+        map[i] = new pokemon [mapMedWidth];
+    }
+
+    int timesRandom = 2;
+
+    for (int i = 0; i < mapMedHeight; i++)
+    {
+        for (int j = 0; j < mapMedWidth; j++)
+        {
+            if (i == 0 || i == mapMedHeight - 1 || j == 0 || j == mapMedWidth - 1)
+                map[i][j].isValid = 1;
+        }
+    }
+
+    for (int i = 1; i < mapMedHeight - 1; i++)
+    {
+        for (int j = 1; j < mapMedWidth - 1; j++)
+        {
+            map[i][j].x = j;
+            map[i][j].y = i;
+        }
+    }
+
+
+    int totalCell = ((8 - 2) * (8 - 2)) / 2;
+
+    while (totalCell > 0)
+    {
+        char randomCharacter = 65 + rand() % 26;
+        while (timesRandom > 0)
+        {
+            int index = rand() % (mapMedWidth * mapMedHeight);
+            if (map[index / mapMedWidth][index % mapMedWidth].chr == ' ')
+            {
+                if (index / mapMedWidth != 0 && index / mapMedWidth != (mapMedHeight - 1) && index % mapMedWidth != 0 && index % mapMedWidth != (mapMedWidth - 1))
+                {
+                    map[index / mapMedWidth][index % mapMedWidth].chr = randomCharacter;
+                    timesRandom--;
+                }
+            }
+        }
+        timesRandom = 2;
+        totalCell--;
+    }
+    
+    
+}
+void Game::generateMapHard(pokemon **&map)
+{   
+    srand((unsigned int)time(NULL));
+    const int mapHardHeight = 10; // set map height to 10
+    const int mapHardWidth = 10; // set map width to 10
+//    map = new pokemon* [mapHardHeight];
+
+    //Creating a 2D for game array
+    for (int i = 0; i < mapHardHeight; i++)
+    {
+        map[i] = new pokemon [mapHardWidth];
+    }
+
+    int timesRandom = 2;
+
+    for (int i = 0; i < mapHardHeight; i++)
+    {
+        for (int j = 0; j < mapHardWidth; j++)
+        {
+            if (i == 0 || i == mapHardHeight - 1 || j == 0 || j == mapHardWidth - 1)
+                map[i][j].isValid = 1;
+        }
+    }
+
+    for (int i = 1; i < mapHardHeight - 1; i++)
+    {
+        for (int j = 1; j < mapHardWidth - 1; j++)
+        {
+            map[i][j].x = j;
+            map[i][j].y = i;
+        }
+    }
+
+
+    int totalCell = ((10 - 2) * (10 - 2)) / 2;
+
+    while (totalCell > 0)
+    {
+        char randomCharacter = 65 + rand() % 26;
+        while (timesRandom > 0)
+        {
+            int index = rand() % (mapHardWidth * mapHardHeight);
+            if (map[index / mapHardWidth][index % mapHardWidth].chr == ' ')
+            {
+                if (index / mapHardWidth != 0 && index / mapHardWidth != (mapHardHeight - 1) && index % mapHardWidth != 0 && index % mapHardWidth != (mapHardWidth - 1))
+                {
+                    map[index / mapHardWidth][index % mapHardWidth].chr = randomCharacter;
+                    timesRandom--;
+                }
+            }
+        }
+        timesRandom = 2;
+        totalCell--;
+    }
+    
+}
+
+void deleteMap(pokemon **map)
+{
+    for (int i = 0; i < mapHeight; i++)
+    {
+        delete[] * (map + i);
+    }
+    delete[] map;
+}
+
+
+void printPokemons(pokemon **map)
+{
+    for (int i = 0; i < mapHeight; i++)
+    {
+        for (int j = 0; j < mapWidth; j++)
+        {
+            cout << map[i][j].chr << " ";
+        }
+        cout << endl;
+    }
+}
+
+
+void pokemon::drawPlayingBox(int color)
+{   
+    if (!isValid)
+        return;
+
+    for (int i = 0; i < 5; i++) {
+        gotoxy(x * 10, y * 4 + i);
+        cout << box[i];
+    }
+
+    if (isSelected) {
+        SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), color + (chr % 6 + 1)); // white background
+        for (int i = 1; i < 4; i++) {
+            gotoxy(x * 10 + 1, y * 4 + i);
+            cout << "         ";
+        }
+
+        gotoxy(x * 10 + 5, y * 4 + 2);
+        cout << chr;
+        SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 7);
+    }
+    else {
+        gotoxy(x * 10 + 5, y * 4 + 2);
+        SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), chr % 6 + 1);
+        cout << chr;
+        SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 7);
+    }
+}
+
+void pokemon::deleteBox() {
+    int xCurrent = x + 1, yCurrent = y + 1;
+
+    for (int i = 0; i < 5; i++) {
+        gotoxy(x * 10, y * 4 + i);
+        cout << "           ";
+    }
+}
+void pokemon::drawSuggestedBox(int color)
+{
+    SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), color + (chr % 6 + 1)); // white background
+    for (int i = 1; i < 4; i++) {
+        gotoxy(x * 10 + 1, y * 4 + i);
+        cout << "         ";
+    }
+
+    gotoxy(x * 10 + 5, y * 4 + 2);
+    cout << chr;
+    SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 7);
+
+}
+
+void displayTimeRemaining(int counter) {
+    COORD pos = { 65, 20 };
+    HANDLE output = GetStdHandle(STD_OUTPUT_HANDLE);
+    DWORD written;
+    std::string message = "\rTime remaining: " + std::to_string(counter);
+    WriteConsoleOutputCharacterA(output, message.c_str(), message.length(), pos, &written);
+}
+
+void Game::renderBoardEasy(pokemon** map, int height, int width, player &p) 
+{
+	int counter = 60; //amount of seconds
+    
+	const int mapEzHeight = 6; // set map height to 6
+    const int mapEzWidth = 6; // set map width to 6
+    for (int i = 1; i < mapEzHeight - 1; i++) {
+        for (int j = 1; j < mapEzWidth - 1; j++) {
+            map[i][j].drawPlayingBox(112);
+        }
+    }
+          
+		printrectangle(59, 1, 33, 10);
 		printrectangle(59, 12, 33, 10);
 		
 		printrectangle(60, 2, 31, 2);
@@ -1219,26 +2510,26 @@ void Game::printInterface(){
 		cout << "PLAYER'S INFORMATION";
 		
 		gotoxy(65, 5);
-		if(playerName[0] == '\0') {
-		    strcpy(playerName, "unknown");
-		    cout << "Player's name: " << playerName;
+		if(p.playerName[0] == '\0') {
+		    strcpy(p.playerName, "unknown");
+		    cout << "Player's name: " << p.playerName;
 		} else {
-		    cout << "Player's name: " << playerName;
+		    cout << "Player's name: " << p.playerName;
 		}
 		gotoxy(65, 7);
-		if(playerID[0] == '\0') {
-			strcpy(playerName, "unknown");
+		if(p.playerID[0] == '\0') {
+			strcpy(p.playerName, "unknown");
 //		    playerID = -1;
-		    cout << "Player's ID: " << playerID;
+		    cout << "Player's ID: " << p.playerID;
 		} else {
-			 cout << "Student's ID: " << playerID;
+			 cout << "Student's ID: " << p.playerID;
 		}
 		gotoxy(65, 9);
-		if(playerClass[0] == '\0') {
-		    strcpy(playerClass, "unknown");
-		    cout << "Class: " << playerClass;
+		if(p.playerClass[0] == '\0') {
+		    strcpy(p.playerClass, "unknown");
+		    cout << "Class: " << p.playerClass;
 		} else {
-		    cout << "Class: " << playerClass;
+		    cout << "Class: " << p.playerClass;
 		}
 		
 		
@@ -1247,13 +2538,15 @@ void Game::printInterface(){
 		gotoxy(69, 14);
 		cout << "GAME INFORMATION";
 		
-		gotoxy(65, 16);
-		cout << "Moves:";
+		
 		gotoxy(65, 17);
 		cout << "Current score:";
-		gotoxy(80, 17);
-		cout << score;
-		
+		gotoxy(65, 18);
+		cout << "Hint: ";
+		gotoxy(65,19);
+		cout << "Life: ";
+		gotoxy(65, 20);
+	   
 		printrectangle(59, 24, 33, 2);
 		printrectangle(59, 27, 14, 2);
 		printrectangle(78, 27, 14, 2);
@@ -1265,173 +2558,784 @@ void Game::printInterface(){
 		cout << "H : Help";
 		gotoxy(81, 28);
 		cout << "Esc : Exit";
-		ShowCursor(false);
+		 
+	
 		
-		// Check for keyboard input
-    if (_kbhit()) {
-        char key = _getch();
-
-        // Implement Move suggestion
-//        if (key == 'm' || key == 'M') {
-//            board->showPossibleMoves();
-//        }
-		// Ignore up-arrow key
-	    if (key == 72) {
-	        continue;
-	    }
-        // Implement Help
-        if (key == 'h' || key == 'H') {
-            instructionscreen();
-            break;
-        }
-
-        // Implement Exit
-        if (key == 27) {
-            exitscreen();
-            break;
-        }
-        
-	    
-        
-	}
-			
 }
-	
-}
-void Game::printInterfaceHard(){
-	
-
-	system("cls");
-	
-//	board->renderBoard();
-//	board->buildBoardData();
-	if(_mode == _HARD){
-	
-		showBoardHard();
+		 
+void Game::renderBoardMedium(pokemon** map, int height, int width, player &p) 
+{	
+    
+	const int mapMedHeight = 8; // set map height to 6
+    const int mapMedWidth = 8; // set map width to 6
+    for (int i = 1; i < mapMedHeight - 1; i++) {
+        for (int j = 1; j < mapMedWidth - 1; j++) {
+            map[i][j].drawPlayingBox(112);
+        }
+    }
+    		
 		
-	}
-	bool Loop = 1;
-	ShowCursor(false);
-	while(Loop){ 
+	    printrectangle(75, 1, 33, 10);
+		printrectangle(75, 12, 33, 10);
 		
-//		
-//		
-	    printrectangle(72, 3, 33, 10);
-		printrectangle(72, 14, 33, 10);
-		
-		printrectangle(73, 4, 31, 2);
+		printrectangle(76, 2, 31, 2);
 	   
-		gotoxy(80, 5);
+		gotoxy(83, 3);
 		cout << "PLAYER'S INFORMATION";
 		
-		gotoxy(78, 7);
-		if(playerName[0] == '\0') {
-		    strcpy(playerName, "unknown");
-		    cout << "Player's name: " << playerName;
+		gotoxy(81, 5);
+		if(p.playerName[0] == '\0') {
+		    strcpy(p.playerName, "unknown");
+		    cout << "Player's name: " << p.playerName;
 		} else {
-		    cout << "Player's name: " << playerName;
+		    cout << "Player's name: " << p.playerName;
 		}
-		gotoxy(77, 9);
-		if(playerID[0] == '\0') {
-			strcpy(playerID, "unknown");
-//			playerID = -1;
-			cout << "Player's ID: " << playerID;
+		gotoxy(81, 7);
+		if(p.playerID[0] == '\0') {
+			strcpy(p.playerID, "unknown");
+//		    playerID = -1;
+		    cout << "Player's ID: " << p.playerID;
 		} else {
-			
-		    cout << "Student's ID: " << playerID;
+			 cout << "Student's ID: " << p.playerID;
 		}
-		gotoxy(78, 11);
-		if(playerName[0] == '\0') {
-		    strcpy(playerClass, "unknown");
-		    cout << "Class: " << playerClass;
+		gotoxy(81, 9);
+		if(p.playerClass[0] == '\0') {
+		    strcpy(p.playerClass, "unknown");
+		    cout << "Class: " << p.playerClass;
 		} else {
-		    cout << "Class: " << playerClass;
+		    cout << "Class: " << p.playerClass;
 		}
 		
 		
-		printrectangle(73, 15, 31, 2);
+		printrectangle(76, 13, 31, 2);
 		
-		gotoxy(82, 16);
+		gotoxy(85, 14);
 		cout << "GAME INFORMATION";
 		
-		gotoxy(78, 18);
-		cout << "Moves:";
-		gotoxy(78, 19);
+
+		gotoxy(81, 17);
 		cout << "Current score:";
-		gotoxy(93, 19);
-		cout << score;
+		gotoxy(81, 18);
+		cout << "Hint: ";
+		gotoxy(81,19);
+		cout << "Life: ";
 		
-		printrectangle(72, 26, 33, 2);
-		printrectangle(72, 29, 14, 2);
-		printrectangle(90, 29, 14, 2);
+		printrectangle(75, 24, 33, 2);
+		printrectangle(75, 27, 14, 2);
+		printrectangle(94, 27, 14, 2);
 		
-		gotoxy(80, 27);
+		gotoxy(83, 25);
 		cout << "M : Move suggestion";
 		
-		gotoxy(76, 30);
+		gotoxy(79, 28);
 		cout << "H : Help";
-		gotoxy(94, 30);
+		gotoxy(97, 28);
+		cout << "Esc : Exit";
+}
+void Game::renderBoardHard(pokemon** map, int height, int width, player &p) 
+{	
+	const int mapHardHeight = 10; // set map height to 10
+    const int mapHardWidth = 10; // set map width to 10
+    for (int i = 1; i < mapHardHeight - 1; i++) {
+        for (int j = 1; j < mapHardWidth - 1; j++) {
+            map[i][j].drawPlayingBox(112);
+        }
+    }
+    
+	    printrectangle(102, 3, 33, 10);
+		printrectangle(102, 14, 33, 10);
+		
+		printrectangle(103, 4, 31, 2);
+	   
+		gotoxy(110, 5);
+		cout << "PLAYER'S INFORMATION";
+		
+		gotoxy(108, 7);
+		if(p.playerName[0] == '\0') {
+		    strcpy(p.playerName, "unknown");
+		    cout << "Player's name: " << p.playerName;
+		} else {
+		    cout << "Player's name: " << p.playerName;
+		}
+		gotoxy(107, 9);
+		if(p.playerID[0] == '\0') {
+			strcpy(p.playerID, "unknown");
+//			playerID = -1;
+			cout << "Player's ID: " << p.playerID;
+		} else {
+			
+		    cout << "Student's ID: " << p.playerID;
+		}
+		gotoxy(108, 11);
+		if(p.playerClass[0] == '\0') {
+		    strcpy(p.playerClass, "unknown");
+		    cout << "Class: " << p.playerClass;
+		} else {
+		    cout << "Class: " << p.playerClass;
+		}
+		
+		
+		printrectangle(103, 15, 31, 2);
+		
+		gotoxy(112, 16);
+		cout << "GAME INFORMATION";
+		
+
+		gotoxy(108, 19);
+		cout << "Current score:";
+//		gotoxy(123, 19);
+//		cout << score;
+		
+		gotoxy(108, 20);
+		cout << "Hint: ";
+		
+		gotoxy(108, 21);
+		cout << "Life: ";
+		
+		
+		printrectangle(102, 26, 33, 2);
+		printrectangle(102, 29, 14, 2);
+		printrectangle(120, 29, 14, 2);
+		
+		gotoxy(106, 27);
+		cout << "M : Move suggestion";
+		
+		gotoxy(106, 30);
+		cout << "H : Help";
+		gotoxy(124, 30);
 		cout << "Esc : Exit";
 		ShowCursor(false);
 		
-		// Check for keyboard input
-    if (_kbhit()) {
-        char key = _getch();
-
-        // Implement Move suggestion
-//        if (key == 'm' || key == 'M') {
-//            board->showPossibleMoves();
-//        }
-		// Ignore up-arrow key
-	    if (key == 72) {
-	        continue;
-	    }
-        // Implement Help
-        if (key == 'h' || key == 'H') {
-            instructionscreen();
-            break;
-        }
-
-        // Implement Exit
-        if (key == 27) {
-            exitscreen();
-            break;
-        }
-        
-	    
-        
-	}
-			
 }
+void drawCongrats(string fileName, int x, int y) {
+    ifstream file("text\\congratulations.txt");
+
+    if (file.is_open()) {
+        char c;
+        int posX = 0, posY = 0;
+        while (file.get(c)) {
+            if (c == ')' || c == '(' || c == '\\' || c == '/') {
+                
+                gotoxy(posX, posY);
+                setcolor(Yellow);
+                cout << c;
+                posX++;
+            }
+            else if (c == '`' || c == '<' || c == '>' || c == '`' || c == '*'){
+            	gotoxy(posX, posY);
+                setcolor(Orange);
+                cout << c;
+                posX++;
+			}
+      		
+            else if (c == '\n') {
+                posY++;
+                posX = x;
+            }
+            else {
+                
+                gotoxy(posX, posY);
+                setcolor(Red);
+                cout << c;
+                posX++;
+            }
+        }
+        file.close();
+    }
+}
+
+void Won(string fileName, int x, int y) {
+    ifstream file("text\\won.txt");
+
+    if (file.is_open()) {
+        char c;
+        int posX = 0, posY = 9;
+        while (file.get(c)) {
+            if (c == '_' || c == '|' || c == '\\' || c == '/' || c == '`' || c == '-' || c == '\'' || c == '.' || c == '\(' || c == ')' ) {
+                
+                gotoxy(posX, posY);
+                setcolor(Orange);
+                cout << c;
+                posX++;
+            }
+           
+      		
+            else if (c == '\n') {
+                posY++;
+                posX = x;
+            }
+            else {
+                
+                gotoxy(posX, posY);
+                setcolor(Red);
+                cout << c;
+                posX++;
+            }
+        }
+        file.close();
+    }
+}
+void Lose(string fileName, int x, int y) {
+    ifstream file("text\\lose.txt");
+
+    if (file.is_open()) {
+        char c;
+        int posX = 0, posY = 6;
+        while (file.get(c)) {
+            if (c == '_' || c == '|' || c == '\\' || c == '/' || c == '`' || c == '-' || c == '\'' || c == '.' || c == '\(' || c == ')' ) {
+                
+                gotoxy(posX, posY);
+                setcolor(Blue);
+                cout << c;
+                posX++;
+            }
+           
+      		
+            else if (c == '\n') {
+                posY++;
+                posX = x;
+            }
+            else {
+                
+                gotoxy(posX, posY);
+                setcolor(Red);
+                cout << c;
+                posX++;
+            }
+        }
+        file.close();
+    }
+}
+void Game::printCongratulationBoardEasy(player& p){
+	
+	system("cls");
+	
+	gotoxy(0,0);
+	drawCongrats("text\\congratulations.txt", 0, 0);
+	Won("text\\won.txt", 0, 9);
+	
+	gotoxy(41, 17);
+	cout << "Your score: " << endl;
+	gotoxy(53, 17);
+	cout << p.point;
+	saveData(p);
+	
+	
+	
+	
+//	gotoxy(0, 0);
+//	
+//	printlogo();
+	setcolor(Cyan);
+	printrectangle(34, 19, 35, 8);
+	printrectangle(37, 24, 7, 2);
+	printrectangle(60, 24, 6, 2);
+	gotoxy(40, 22);
+	cout << "Do you want to play again?";
+	string str[2] = { "Yes", "No" };
+	int left[] = { 35,40,47,58,63,69 }, word[] = { 32,32,175,174 }, color[] = { BLACK, GREEN }, top = 19;
+	bool choice = 1;
+	auto print1 = [&]()
+	{
+		int i = 0;
+		while (i < 2)
+		{
+			PlaySound("music\\click.wav", NULL, SND_ASYNC | SND_NOSTOP);
+			gotoxy(left[choice * 3], top + 6);        putchar(word[i * 2]);
+			gotoxy(left[choice * 3 + 1], top + 6);    cout << str[choice];
+			gotoxy(left[choice * 3 + 2], top + 6);    putchar(word[i * 2 + 1]);
+			if (!i++)
+				choice = !choice;
+		}
+	};
+	print1();
+	while (true)
+	{
+		int key = getConsoleinput();
+		if ((key == 3 && choice == 1) || (key == 4 && choice == 0))
+			print1();
+		else if (key == 6)
+		{
+			if (!choice)
+				startGameEasy(p);
+			else
+				isPlaying = false;
+				system("cls");
+				exit(0);
+			return;
+		}
+//		else
+//			Controller::playSound(ERROR_SOUND);
+//	}
+//	playSound(WIN_SOUND);
+	
+	}
+	
+	
+ 
+}
+void Game::printCongratulationBoardMedium(player& p){
+	
+	system("cls");
+	
+	gotoxy(0,0);
+	drawCongrats("text\\congratulations.txt", 0, 0);
+	Won("text\\won.txt", 0, 9);
+
+	gotoxy(41, 17);
+	cout << "Your score: " << endl;
+	gotoxy(53, 17);
+	cout << p.point;
+	saveData(p);
+	
+	
+	
+//	gotoxy(0, 0);
+//	
+//	printlogo();
+	setcolor(Cyan);
+	printrectangle(34, 19, 35, 8);
+	printrectangle(37, 24, 7, 2);
+	printrectangle(60, 24, 6, 2);
+	gotoxy(40, 22);
+	cout << "Do you want to play again?";
+	string str[2] = { "Yes", "No" };
+	int left[] = { 35,40,47,58,63,69 }, word[] = { 32,32,175,174 }, color[] = { BLACK, GREEN }, top = 19;
+	bool choice = 1;
+	auto print1 = [&]()
+	{
+		int i = 0;
+		while (i < 2)
+		{
+			PlaySound("music\\click.wav", NULL, SND_ASYNC | SND_NOSTOP);
+			gotoxy(left[choice * 3], top + 6);        putchar(word[i * 2]);
+			gotoxy(left[choice * 3 + 1], top + 6);    cout << str[choice];
+			gotoxy(left[choice * 3 + 2], top + 6);    putchar(word[i * 2 + 1]);
+			if (!i++)
+				choice = !choice;
+		}
+	};
+	print1();
+	while (true)
+	{
+		int key = getConsoleinput();
+		if ((key == 3 && choice == 1) || (key == 4 && choice == 0))
+			print1();
+		else if (key == 6)
+		{
+			if (!choice)
+				startGameMedium(p);
+			else
+				isPlaying = false;
+				system("cls");
+				exit(0);
+			return;
+		}
+//		else
+//			Controller::playSound(ERROR_SOUND);
+//	}
+//	playSound(WIN_SOUND);
+	
+	}
+
+
+
+}
+void Game::printCongratulationBoardHard(player& p){
+	
+system("cls");
+	
+	gotoxy(0,0);
+	drawCongrats("text\\congratulations.txt", 0, 0);
+	Won("text\\won.txt", 0, 9);
+
+	gotoxy(41, 17);
+	cout << "Your score: " << endl;
+	gotoxy(53, 17);
+	cout << p.point;
+	saveData(p);
+	
+	
+	
+//	gotoxy(0, 0);
+//	
+//	printlogo();
+	setcolor(Cyan);
+	printrectangle(34, 19, 35, 8);
+	printrectangle(37, 24, 7, 2);
+	printrectangle(60, 24, 6, 2);
+	gotoxy(36, 22);
+	cout << "Do you want to play next round?";
+	string str[2] = { "Yes", "No" };
+	int left[] = { 35,40,47,58,63,69 }, word[] = { 32,32,175,174 }, color[] = { BLACK, GREEN }, top = 19;
+	bool choice = 1;
+	auto print1 = [&]()
+	{
+		int i = 0;
+		while (i < 2)
+		{
+			PlaySound("music\\click.wav", NULL, SND_ASYNC | SND_NOSTOP);
+			gotoxy(left[choice * 3], top + 6);        putchar(word[i * 2]);
+			gotoxy(left[choice * 3 + 1], top + 6);    cout << str[choice];
+			gotoxy(left[choice * 3 + 2], top + 6);    putchar(word[i * 2 + 1]);
+			if (!i++)
+				choice = !choice;
+		}
+	};
+	print1();
+	while (true)
+	{
+		int key = getConsoleinput();
+		if ((key == 3 && choice == 1) || (key == 4 && choice == 0))
+			print1();
+		else if (key == 6)
+		{
+			if (!choice)
+				startGameHard(p);
+			else
+				isPlaying = false;
+				system("cls");
+				exit(0);
+			return;
+		}
+//		else
+//			Controller::playSound(ERROR_SOUND);
+//	}
+//	playSound(WIN_SOUND);
+	
+	}
+	
 	
 }
-void Game::startGame() 
+
+void Game::printLoseEasy(player &p){
+	system("cls");
+	
+	Lose("text\\lose.txt", 0, 6);
+	
+	setcolor(Cyan);
+	printrectangle(34, 14, 35, 8);
+	printrectangle(37, 19, 7, 2);
+	printrectangle(60, 19, 6, 2);
+	gotoxy(40, 17);
+	cout << "Do you want to play again?";
+	string str[2] = { "Yes", "No" };
+	int left[] = { 35,40,47,58,63,69 }, word[] = { 32,32,175,174 }, color[] = { BLACK, GREEN }, top = 19;
+	bool choice = 1;
+	auto print1 = [&]()
+	{
+		int i = 0;
+		while (i < 2)
+		{
+			PlaySound("music\\click.wav", NULL, SND_ASYNC | SND_NOSTOP);
+			gotoxy(left[choice * 3], top + 1);        putchar(word[i * 2]);
+			gotoxy(left[choice * 3 + 1], top + 1);    cout << str[choice];
+			gotoxy(left[choice * 3 + 2], top + 1);    putchar(word[i * 2 + 1]);
+			if (!i++)
+				choice = !choice;
+		}
+	};
+	print1();
+	while (true)
+	{
+		int key = getConsoleinput();
+		if ((key == 3 && choice == 1) || (key == 4 && choice == 0))
+			print1();
+		else if (key == 6)
+		{
+			if (!choice){
+				
+				startGameEasy(p);
+			}
+				
+			else{
+				isPlaying = false;
+				system("cls");
+				exit(0);
+				return;
+				
+			
+			}
+	
+	}
+	
+}
+}
+void Game::printLoseMedium(player &p){
+	system("cls");
+	
+	Lose("text\\lose.txt", 0, 6);
+	
+	setcolor(Cyan);
+	printrectangle(34, 14, 35, 8);
+	printrectangle(37, 19, 7, 2);
+	printrectangle(60, 19, 6, 2);
+	gotoxy(36, 17);
+	cout << "Do you want to play again?";
+	string str[2] = { "Yes", "No" };
+	int left[] = { 35,40,47,58,63,69 }, word[] = { 32,32,175,174 }, color[] = { BLACK, GREEN }, top = 19;
+	bool choice = 1;
+	auto print1 = [&]()
+	{
+		int i = 0;
+		while (i < 2)
+		{
+			PlaySound("music\\click.wav", NULL, SND_ASYNC | SND_NOSTOP);
+			gotoxy(left[choice * 3], top + 1);        putchar(word[i * 2]);
+			gotoxy(left[choice * 3 + 1], top + 1);    cout << str[choice];
+			gotoxy(left[choice * 3 + 2], top + 1);    putchar(word[i * 2 + 1]);
+			if (!i++)
+				choice = !choice;
+		}
+	};
+	print1();
+	while (true)
+	{
+		int key = getConsoleinput();
+		if ((key == 3 && choice == 1) || (key == 4 && choice == 0))
+			print1();
+		else if (key == 6)
+		{
+			if (!choice){
+				
+				startGameMedium(p);
+			}
+				
+			else{
+				isPlaying = false;
+				system("cls");
+				exit(0);
+				return;
+				
+			
+			}
+	
+	}
+	
+}
+}
+void Game::printLoseHard(player &p){
+	system("cls");
+	
+	Lose("text\\lose.txt", 0, 6);
+	
+	setcolor(Cyan);
+	printrectangle(34, 14, 35, 8);
+	printrectangle(37, 19, 7, 2);
+	printrectangle(60, 19, 6, 2);
+	gotoxy(36, 17);
+	cout << "Do you want to play again?";
+	string str[2] = { "Yes", "No" };
+	int left[] = { 35,40,47,58,63,69 }, word[] = { 32,32,175,174 }, color[] = { BLACK, GREEN }, top = 19;
+	bool choice = 1;
+	auto print1 = [&]()
+	{
+		int i = 0;
+		while (i < 2)
+		{
+			PlaySound("music\\click.wav", NULL, SND_ASYNC | SND_NOSTOP);
+			gotoxy(left[choice * 3], top + 1);        putchar(word[i * 2]);
+			gotoxy(left[choice * 3 + 1], top + 1);    cout << str[choice];
+			gotoxy(left[choice * 3 + 2], top + 1);    putchar(word[i * 2 + 1]);
+			if (!i++)
+				choice = !choice;
+		}
+	};
+	print1();
+	while (true)
+	{
+		int key = getConsoleinput();
+		if ((key == 3 && choice == 1) || (key == 4 && choice == 0))
+			print1();
+		else if (key == 6)
+		{
+			if (!choice){
+				
+				startGameHard(p);
+			}
+				
+			else{
+				isPlaying = false;
+				system("cls");
+				exit(0);
+				return;
+				
+			
+			}
+	
+	}
+	
+}
+}
+void Game::playGameEasy(player& p) {
+    //srand(time(0));
+    //getBackground(bg);
+    int counter = 60;
+	const int heightEz = 6;
+	const int widthEz = 6;
+    pokemon** map = new pokemon * [heightEz];
+    generateMapEasy(map);
+
+    position selectedPos[] = { {-1, -1}, {-1, -1} };
+    int couple = 2;
+    position curPosition{ 1, 1 };
+    int status = 0; //0. dang choi game //1. het game //2. nguoi choi chon thoat
+
+    while (!status && p.life && counter >= 1) {
+        map[curPosition.y][curPosition.x].isSelected = 1;
+		
+        renderBoardEasy(map, 6, 6, p);
+		
+        moveEasy(map, curPosition, status, p, selectedPos, couple, 6, 6);
+    
+    	
+        if (checkValidPairsEasyLevel(map, 6, 6) == false) {
+	        printCongratulationBoardEasy(p);
+	        
+    	}
+//    	savePoint(p);
+    	
+    }
+ 
+    Sleep(500);
+    
+    system("cls");
+
+}
+void Game::playGameMedium(player& p) {
+    //srand(time(0));
+    //getBackground(bg);
+
+    pokemon** map = new pokemon * [height];
+    generateMapMedium(map);
+
+	
+    gotoxy(86, 18);
+    cout << p.life;
+
+
+
+    position selectedPos[] = { {-1, -1}, {-1, -1} };
+    int couple = 2;
+    position curPosition{ 1, 1 };
+    int status = 0; //0. dang choi game //1. het game //2. nguoi choi chon thoat
+
+
+    while (status == 0 && p.life != 0) {
+        map[curPosition.y][curPosition.x].isSelected = 1;
+		
+        renderBoardMedium(map, 8, 8, p);
+	
+        moveMedium(map, curPosition, status, p, selectedPos, couple);
+       
+       if (checkValidPairsMediumLevel(map, 8, 8) == false)
+        {
+            printCongratulationBoardMedium(p);
+//            savePoint(p);
+        }
+    	
+	
+
+//        system("cls");
+        //if ((!checkValidPairs(board))) status = 1;
+    }
+
+    renderBoardMedium(map, 8, 8, p);
+    deleteMap(map);
+    Sleep(500);
+    
+    system("cls");
+
+}
+void Game::playGameHard(player& p) {
+    //srand(time(0));
+    //getBackground(bg);
+
+    pokemon** map = new pokemon * [height];
+    generateMapHard(map);
+
+	
+    gotoxy(86, 18);
+    cout << p.life;
+
+
+
+    position selectedPos[] = { {-1, -1}, {-1, -1} };
+    int couple = 2;
+    position curPosition{ 1, 1 };
+    int status = 0; //0. dang choi game //1. het game //2. nguoi choi chon thoat
+
+
+   while (!status && p.life) {
+        map[curPosition.y][curPosition.x].isSelected = 1;
+        renderBoardHard(map, 10, 10, p);
+
+        moveHard(map, curPosition, status, p, selectedPos, couple);
+        if (checkValidPairsHardLevel(map, 10, 10) == false)
+        {
+            printCongratulationBoardHard(p);
+//            savePoint(p);
+        }
+    }
+
+    renderBoardHard(map, 10, 10, p);
+    deleteMap(map);
+    Sleep(500);
+    
+    system("cls");
+
+}
+
+
+void Game::startGameEasy(player &p) 
 {
 	system("cls");
 	int mapWidth = 6, mapHeight = 6;
 	int xCur = 1, yCur = 1;
-	
-	
-	while(isPlaying = true){
+//	player p;
+	bool isPlaying = true;
+	p.hint = 5;
+	p.point = 0;
+	p.life = 5;
+	while(isPlaying){
 		bool isPause = false;
-		printInterface();
+		playGameEasy(p);
+		}
+	
 
 }
-	saveData();
-}
-void Game::startGameHard() 
+void Game::startGameMedium(player &p) 
 {
 	system("cls");
 	int mapWidth = 8, mapHeight = 8;
 	int xCur = 1, yCur = 1;
-	
-	
+//	player p;
+	p.hint = 10;
+	p.point = 0;
+	p.life = 10;
+	while(isPlaying = true){
+		bool isPause = false;
+		playGameMedium(p);
+		
+
+	}
+}
+
+void Game::startGameHard(player &p) 
+{
+	system("cls");
+	int mapWidth = 10, mapHeight = 10;
+	int xCur = 1, yCur = 1;
+//	player p;
+	p.hint = 10;
+	p.point = 0;
+	p.life = 15;
 	while(isPlaying = true){
 		
-		printInterfaceHard();
+		playGameHard(p);
 	
 		
 	
-}	
-saveData();
+	}	
+
 }
